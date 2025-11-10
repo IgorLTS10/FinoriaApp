@@ -1,0 +1,240 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,10,20,.55);
+  backdrop-filter: blur(8px);
+  z-index: 70;
+}
+
+.center {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow: auto;
+}
+
+/* --- Modale --- */
+.authModal {
+  --auth-accent: #6ae3ff;
+  --auth-accent2: #b6e1ff;
+  --auth-text: #e6ecff;
+  --auth-muted: #9aa5bd;
+  --auth-border: rgba(255,255,255,.16);
+
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(92vh, 760px);
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+  border: 1px solid var(--auth-border);
+  border-radius: 18px;
+  box-shadow: 0 22px 60px rgba(0,0,0,.5);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px dashed rgba(255,255,255,.12);
+}
+.title { display: flex; align-items: center; gap: 10px; }
+.title h3 { margin: 0; font-size: 18px; color: var(--auth-text); }
+.dot {
+  width: 8px; height: 8px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--auth-accent2), var(--auth-accent));
+  box-shadow: 0 0 16px rgba(106,227,255,.5);
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex; gap: 6px; background: rgba(255,255,255,.04);
+  padding: 4px; border-radius: 12px; border: 1px solid var(--auth-border);
+}
+.tab {
+  border: none; cursor: pointer; color: var(--auth-text);
+  padding: 6px 10px; border-radius: 8px; font-weight: 600; background: transparent;
+}
+.active {
+  background: linear-gradient(90deg, var(--auth-accent2), var(--auth-accent));
+  color: #06121f; box-shadow: 0 4px 16px rgba(106,227,255,.25);
+}
+
+/* --- Body --- */
+.body {
+  padding: 16px 18px;
+  overflow: auto;
+}
+
+/* --- Footer --- */
+.foot { display: flex; justify-content: flex-end; padding: 10px 16px; }
+.tiny { font-size: 12px; color: var(--auth-muted); }
+
+/* --- Form internes Stack --- */
+.stackSurface :global(form) {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+/* Inputs */
+.authModal :global(input[type="email"]),
+.authModal :global(input[type="password"]),
+.authModal :global(input[type="text"]) {
+  width: 100% !important;
+  background: rgba(255,255,255,.04) !important;
+  color: var(--auth-text) !important;
+  border: 1px solid var(--auth-border) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+}
+
+/* =========================
+   Toggle visibilité mot de passe — version pro
+   ========================= */
+
+/* on réserve de la place à droite dans le champ */
+.authModal :global(input[type="password"]) {
+  padding-right: 44px !important;
+}
+
+/* bouton œil (rendu après l'input par le SDK) */
+.authModal :global(input[type="password"] + button),
+.authModal :global(input[type="text"] + button[aria-label*="password"]) {
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  color: #b6e1ff !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  height: 36px !important;
+  width: 36px !important;
+  padding: 0 !important;
+  margin-left: -40px !important;    /* se place visuellement dedans, à droite */
+  vertical-align: middle;
+  transform: translateY(4px);        /* léger alignement vertical */
+  opacity: .8;
+  transition: transform .15s ease, opacity .15s ease, color .15s ease;
+}
+.authModal :global(input[type="password"] + button:hover),
+.authModal :global(input[type="text"] + button[aria-label*="password"]:hover) {
+  opacity: 1;
+  transform: translateY(4px) scale(1.08);
+  color: #6ae3ff !important;
+}
+
+/* icône interne si SVG présent */
+.authModal :global(button[aria-label*="password"] svg) {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: #b6e1ff !important;
+  stroke-width: 1.5;
+  fill: none !important;
+  transition: stroke .15s ease, transform .15s ease;
+}
+.authModal :global(button[aria-label*="password"]:hover svg) {
+  stroke: #6ae3ff !important;
+  transform: scale(1.08);
+}
+
+/* ========================= */
+
+/* Submit */
+.authModal :global(button[type="submit"]) {
+  background: linear-gradient(90deg, #b6e1ff, #6ae3ff) !important;
+  color: #06121f !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 22px rgba(106,227,255,.25) !important;
+  font-weight: 800 !important;
+  width: 100% !important;
+}
+
+/* Liens internes */
+.authModal :global(a) {
+  color: #b6e1ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.authModal :global(a:hover) {
+  color: #e8f4ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* --- Masquage des boutons sociaux natifs --- */
+.stackSurface :global(form button:not([type="submit"])) {
+  display: none !important;
+}
+/* exceptions pour garder les toggles de password */
+.stackSurface :global(form input[type="password"] + button),
+.stackSurface :global(form button[aria-label*="password"]),
+.stackSurface :global(form button[aria-label*="Password"]),
+.stackSurface :global(form button[aria-label*="mot de passe"]) {
+  display: inline-flex !important;
+}
+
+/* wrappers “social” / “oauth” éventuels */
+.stackSurface :global(form [data-oauth]),
+.stackSurface :global(form [data-provider]),
+.stackSurface :global(form [class*="oauth"]),
+.stackSurface :global(form [class*="social"]) {
+  display: none !important;
+}
+
+/* Petits écrans */
+@media (max-width: 420px) {
+  .authModal { width: calc(100vw - 20px); }
+  .body { padding: 10px 12px; }
+}
+
+
+/* === Toggle "œil" custom, sans fond === */
+/* notre bouton œil custom, sans fond, positionné au pixel près */
+.pwToggle {
+  background: none;
+  border: none;
+  color: #b6e1ff;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: .85;
+  transition: opacity .15s ease, transform .15s ease, color .15s ease;
+  z-index: 2;
+}
+.pwToggle:hover {
+  opacity: 1;
+  transform: scale(1.06);
+  color: #6ae3ff;
+}
+.pwToggle svg { display: block; }
+
+/* espace dans l’input pour ne pas mordre le texte (au cas où) */
+.authModal :global(input[type="password"]),
+.authModal :global(input[type="text"][aria-label*="password" i]) {
+  padding-right: 48px !important;
+}
+
+
+/* Masque tous les boutons non-submit à l’intérieur du form Stack
+   => cache l'œil natif + tout autre bouton interne */
+.stackSurface :global(form button:not([type="submit"])) {
+  display: none !important;
+}
+
+/* (Optionnel) masque aussi des wrappers/hints sociaux éventuels */
+.stackSurface :global(form [data-oauth]),
+.stackSurface :global(form [data-provider]),
+.stackSurface :global(form [class*="oauth"]),
+.stackSurface :global(form [class*="social"]) {
+  display: none !important;
+}

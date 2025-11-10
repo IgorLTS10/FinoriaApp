@@ -1,0 +1,42 @@
+.socialWrap {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.socialBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.06);
+  color: #e6ecff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.socialBtn:hover {
+  border-color: rgba(255,255,255,.28);
+  transform: translateY(-1px);
+}
+
+/* --- Spécifiques --- */
+.github {
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+}
+.google {
+  background: linear-gradient(90deg, #ffffff, #f3f7ff);
+  color: #1a1a1a;
+}
+.google:hover {
+  background: linear-gradient(90deg, #f8fbff, #ffffff);
+}
+
+/* icônes */
+.socialBtn svg {
+  display: block;
+  flex-shrink: 0;
+}
