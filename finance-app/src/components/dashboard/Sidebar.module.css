@@ -1,0 +1,76 @@
+.aside{
+  height:100vh; position:sticky; top:0; padding:14px; width:260px;
+  background: linear-gradient(180deg, rgba(15,22,41,.55), rgba(15,22,41,.25));
+  border-right:1px solid var(--border); backdrop-filter: blur(10px);
+  overflow:auto;
+}
+
+.brand{
+  display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.4px; cursor:pointer;
+  margin:4px 6px 14px; user-select:none;
+}
+.logoDot{width:10px; height:10px; border-radius:999px; background: var(--accent); box-shadow:0 0 12px rgba(106,227,255,.6)}
+
+.group{display:flex; flex-direction:column; gap:6px; margin:10px 0 14px}
+.groupLabel{
+  font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);
+  margin:0 6px 4px;
+}
+
+/* ---- ITEM DE NAV ---- */
+.item{
+  position:relative;
+  display:block; text-decoration:none; width:100%;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color:var(--text);
+  padding:10px 12px; border-radius:12px; font-weight:600; cursor:pointer;
+  transition: border-color .2s ease, transform .08s ease, box-shadow .2s ease, background .2s ease;
+  margin:0 2px; outline: none;
+}
+
+/* Effet sheen + glow au hover */
+.item::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:12px;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.15) 40%, transparent 80%);
+  transform: translateX(-120%);
+  transition: transform .45s ease;
+  pointer-events:none;
+  filter: blur(.2px);
+}
+
+.item:hover{
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25), 0 0 0 1px rgba(255,255,255,.05) inset;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+}
+.item:hover::before{
+  transform: translateX(0%);
+}
+
+/* État actif (route sélectionnée) */
+.active{
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  color:#06121f;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(20,180,255,.22);
+}
+
+/* ---- Variante danger (déconnexion) ---- */
+.danger{
+  border:1px solid rgba(255, 70, 70, .45);
+  background: linear-gradient(180deg, rgba(255, 80, 80, .08), rgba(255, 80, 80, .03));
+  color: #ffd2d2;
+}
+.danger:hover{
+  border-color: rgba(255, 90, 90, .9);
+  background: linear-gradient(180deg, rgba(255, 80, 80, .14), rgba(255, 80, 80, .06));
+  box-shadow: 0 8px 24px rgba(255, 60, 60, .18), 0 0 0 1px rgba(255, 255, 255, .06) inset;
+}
+.danger::before{
+  background: linear-gradient(120deg, transparent 0%, rgba(255,150,150,.25) 40%, transparent 80%);
+}

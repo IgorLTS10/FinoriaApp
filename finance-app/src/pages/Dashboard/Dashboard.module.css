@@ -1,0 +1,37 @@
+/* src/pages/Dashboard/Dashboard.module.css */
+.shell{
+  min-height:100vh; display:grid; grid-template-columns:260px 1fr; gap:0;
+  background: radial-gradient(1000px 600px at 80% -10%, #13203d 0%, var(--bg) 60%);
+  color: var(--text);
+}
+.main{display:flex; flex-direction:column}
+.content{padding:24px}
+.h1{
+  margin:0 0 16px; font-weight:800;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.grid{
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:12px; margin-bottom:18px;
+}
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border:1px solid var(--border); border-radius:14px; padding:16px; backdrop-filter: blur(8px);
+}
+.cardTitle{color:var(--muted); font-weight:600; margin-bottom:6px}
+.cardBig{font-size:22px; font-weight:800}
+
+.section{margin-top:16px}
+.sectionTitle{font-weight:700; margin:0 0 10px; color:#eaf2ff}
+.tableWrap{
+  background: rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; overflow:auto;
+}
+.table{
+  width:100%; border-collapse:collapse; min-width:560px;
+}
+.table th, .table td{
+  text-align:left; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06);
+}
+.table thead th{
+  position:sticky; top:0; background: rgba(15,22,41,.55); backdrop-filter: blur(6px);
+}
