@@ -27,6 +27,28 @@ function formatDateLabel(isoDate: string) {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 }
 
+// 🔥 Tooltip custom
+function CustomTooltip(props: any) {
+  const { active, payload, label } = props;
+  const { displayCurrency } = useFx();
+
+  if (!active || !payload || !payload.length) return null;
+
+  const value = Number(payload[0].value ?? 0);
+
+  return (
+    <div className={styles.tooltip}>
+      {label && <div className={styles.tooltipLabel}>{label}</div>}
+      <div className={styles.tooltipValue}>
+        {value.toLocaleString("fr-FR", {
+          maximumFractionDigits: 0,
+        })}{" "}
+        {displayCurrency}
+      </div>
+    </div>
+  );
+}
+
 export default function LineChartBox() {
   const { convertForDisplay } = useFx();
   const user = useUser();
@@ -74,13 +96,7 @@ export default function LineChartBox() {
               Number(v).toLocaleString("fr-FR", { maximumFractionDigits: 0 })
             }
           />
-          <Tooltip
-            formatter={(v: any) =>
-              Number(v).toLocaleString("fr-FR", {
-                maximumFractionDigits: 0,
-              })
-            }
-          />
+          <Tooltip content={<CustomTooltip />} />
           <Line
             type="monotone"
             dataKey="value"

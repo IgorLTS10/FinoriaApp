@@ -10,3 +10,26 @@
   margin: 0 0 10px;
   font-weight: 700;
 }
+
+.tooltip {
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  color: #e5e7eb;
+  font-size: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.tooltipLabel {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-bottom: 2px;
+}
+
+.tooltipValue {
+  font-size: 13px;
+  font-weight: 600;
+}
+
