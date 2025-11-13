@@ -1,7 +1,7 @@
 // src/api/metaux/list.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { db } from "../../db/client";
-import { metaux } from "../../db/schema";
+import { db } from "../../src/db/client";
+import { metaux } from "../../src/db/schema";
 import { eq } from "drizzle-orm";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

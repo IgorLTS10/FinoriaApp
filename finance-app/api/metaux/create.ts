@@ -1,18 +1,21 @@
 // api/metaux/create.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { db } from "../../db/client";
-import { metaux } from "../../db/schema";
+import { db } from "../../src/db/client";
+import { metaux } from "../../src/db/schema";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    // ✅ pour debug, on log la méthode
+    console.log("METHOD /api/metaux/create:", req.method);
+
     if (req.method !== "POST") {
-      // 🔥 toujours renvoyer du JSON, même en erreur
       return res
         .status(405)
         .json({ error: `Method ${req.method} not allowed, use POST` });
     }
 
-    const body = req.body as any;
+    // Vercel gère déjà JSON, mais on sécurise au cas où
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
 
     const {
       userId,
@@ -24,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       dateAchat,
       fournisseur,
       notes,
-    } = body || {};
+    } = body;
 
     if (!userId || !type || !poids || !prixAchat || !deviseAchat || !dateAchat) {
       return res.status(400).json({

@@ -1,7 +1,7 @@
 // src/api/fx/refresh.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { db } from "../../db/client";
-import { fxRates } from "../../db/schema";
+import { db } from "../../src/db/client";
+import { fxRates } from "../../src/db/schema";
 import { eq } from "drizzle-orm";
 
 const SUPPORTED = ["EUR", "USD", "PLN", "GBP", "CHF"];
