@@ -133,7 +133,7 @@ export default function KpiCards() {
           fontSize: 12,
         }}
       >
-        <span style={{ opacity: 0.7 }}>M\u00e9tal analys\u00e9 :</span>
+        <span style={{ opacity: 0.7 }}>Métal analysé :</span>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {METALS.map((m) => (
             <button
