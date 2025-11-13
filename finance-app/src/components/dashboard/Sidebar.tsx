@@ -8,7 +8,6 @@ export default function Sidebar() {
 
   async function handleSignOut() {
     try {
-      // Tentative douce : si une méthode de signOut existe côté runtime, on l’appelle.
       const maybe = stackClientApp as unknown as { signOut?: () => Promise<void> | void };
       if (maybe && typeof maybe.signOut === "function") {
         await maybe.signOut();
@@ -16,18 +15,14 @@ export default function Sidebar() {
     } catch {
       // noop
     } finally {
-      // Fallback universel : purge locale et reload
       try {
-        // nettoie un éventuel cookie custom
         document.cookie = "user-session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;";
-        // nettoie éventuels tokens locaux (si tu en stockes)
         localStorage.removeItem("stack-session");
         sessionStorage.clear();
       } catch {
         /* noop */
       }
       navigate("/?signedOut=1", { replace: true });
-      // force un reload pour que le provider Stack recalcule l’état
       setTimeout(() => window.location.reload(), 0);
     }
   }
@@ -51,17 +46,61 @@ export default function Sidebar() {
 
       <div className={styles.group}>
         <div className={styles.groupLabel}>Investissements</div>
-        <NavLink to="/dashboard/metaux" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>Métaux</NavLink>
-        <NavLink to="/dashboard/crowdfunding" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>Crowdfunding</NavLink>
-        <NavLink to="/dashboard/actions" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>Actions</NavLink>
-        <NavLink to="/dashboard/etf" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>ETF</NavLink>
-        <NavLink to="/dashboard/crypto" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>Crypto</NavLink>
-        <NavLink to="/dashboard/immobilier" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>Immobilier (SCPI)</NavLink>
+        <NavLink
+          to="/dashboard/metaux"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Métaux
+        </NavLink>
+        <NavLink
+          to="/dashboard/crowdfunding"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Crowdfunding
+        </NavLink>
+        <NavLink
+          to="/dashboard/actions"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Actions
+        </NavLink>
+        <NavLink
+          to="/dashboard/etf"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          ETF
+        </NavLink>
+        <NavLink
+          to="/dashboard/crypto"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Crypto
+        </NavLink>
+        <NavLink
+          to="/dashboard/immobilier"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Immobilier (SCPI)
+        </NavLink>
       </div>
 
       <div className={styles.group}>
         <div className={styles.groupLabel}>Système</div>
-        <NavLink to="/dashboard/parametres" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>Paramètres</NavLink>
+
+        {/* ✅ Nouveau lien Roadmap */}
+        <NavLink
+          to="/dashboard/roadmap"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Roadmap
+        </NavLink>
+
+        <NavLink
+          to="/dashboard/parametres"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Paramètres
+        </NavLink>
 
         {/* Déconnexion (rouge) */}
         <button className={`${styles.item} ${styles.danger}`} onClick={handleSignOut}>

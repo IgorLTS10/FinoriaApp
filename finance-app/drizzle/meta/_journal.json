@@ -22,6 +22,13 @@
       "when": 1763027697029,
       "tag": "0002_nebulous_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763060649750,
+      "tag": "0003_overrated_living_tribunal",
+      "breakpoints": true
     }
   ]
 }

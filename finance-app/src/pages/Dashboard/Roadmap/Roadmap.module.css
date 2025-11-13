@@ -1,0 +1,342 @@
+.page {
+  padding: 24px 26px;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, rgba(106, 227, 255, 0.12), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(152, 255, 191, 0.1), transparent 55%);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 520px;
+}
+
+/* Chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(10, 18, 35, 0.7);
+}
+
+.chipActive {
+  border-color: rgba(106, 227, 255, 0.85);
+  box-shadow: 0 0 14px rgba(106, 227, 255, 0.35);
+}
+
+.chipPlanned {
+  border-color: rgba(180, 208, 255, 0.85);
+}
+
+.chipIdea {
+  border-color: rgba(255, 200, 120, 0.85);
+}
+
+/* Meta section */
+.meta {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1.5fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.metaCard {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(8, 15, 30, 0.85);
+  padding: 12px 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.metaLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.metaValue {
+  font-size: 14px;
+}
+
+/* Columns */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.column {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(9, 16, 33, 0.9), rgba(9, 16, 33, 0.75));
+  padding: 12px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+}
+
+.columnHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.columnTitle {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.columnCount {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Cards */
+.card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), transparent 55%),
+    rgba(9, 16, 33, 0.95);
+  padding: 10px 11px;
+  transition: transform 0.08s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.cardLabel {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--muted);
+}
+
+.cardStatus {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.statusActive {
+  background: rgba(106, 227, 255, 0.16);
+  color: #bff5ff;
+}
+
+.statusPlanned {
+  background: rgba(180, 208, 255, 0.16);
+  color: #d5e1ff;
+}
+
+.statusIdea {
+  background: rgba(255, 200, 120, 0.16);
+  color: #ffe1b4;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cardDescription {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Footer */
+.footer {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footerHighlight {
+  color: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .meta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.footer {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Remplace la span par un bouton stylé */
+.footerHighlightButton {
+  margin-top: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  color: #06121f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(20, 180, 255, 0.25);
+  transition: transform 0.08s ease, box-shadow 0.16s ease, filter 0.16s ease;
+}
+
+.footerHighlightButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 10px 26px rgba(20, 180, 255, 0.32);
+}
+
+/* --- Modal --- */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 18, 0.68);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.modal {
+  width: 100%;
+  max-width: 460px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: radial-gradient(circle at top left, rgba(106, 227, 255, 0.16), transparent 55%),
+    rgba(7, 12, 26, 0.98);
+  padding: 18px 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.modalSubtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalTextarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(3, 7, 18, 0.9);
+  padding: 10px 11px;
+  font-size: 13px;
+  color: var(--text);
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modalTextarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(106, 227, 255, 0.5);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modalSecondary {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(9, 16, 33, 0.9);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.modalPrimary {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  color: #06121f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modalPrimary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+

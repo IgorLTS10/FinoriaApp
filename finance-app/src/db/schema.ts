@@ -29,3 +29,10 @@ export const fxRates = pgTable("fx_rates", {
   rate: numeric("rate", { precision: 14, scale: 6 }).notNull(), // ex: 1.07895
   asOf: timestamp("as_of").defaultNow().notNull(),
 });
+
+export const ideas = pgTable("ideas", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),              // id du user (Stack)
+  content: text("content").notNull(),             // texte saisi par l'utilisateur
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
