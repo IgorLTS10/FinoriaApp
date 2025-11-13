@@ -1,12 +1,12 @@
 // api/metaux/list.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { eq } from "drizzle-orm";
-import { db } from "../../src/db/client";
-import { metaux } from "../../src/db/schema";
+import { db, metaux } from "./shared";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const userId = req.query.userId as string | undefined;
+
     if (!userId) {
       return res.status(400).json({ error: "Missing userId" });
     }
