@@ -5,8 +5,9 @@ import { neon } from "@neondatabase/serverless";
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  // ⚠️ ce message remontera dans les logs Vercel
-  throw new Error("DATABASE_URL is not defined. Configure it in Vercel env vars.");
+  throw new Error(
+    "DATABASE_URL is not defined. Configure it dans les variables d'environnement Vercel."
+  );
 }
 
 const sql = neon(connectionString);

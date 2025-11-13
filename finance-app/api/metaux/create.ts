@@ -1,19 +1,20 @@
 // api/metaux/create.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { db } from "../../src/db/client";
-import { metaux } from "../../src/db/schema";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    console.log("METHOD /api/metaux/create:", req.method);
-
     if (req.method !== "POST") {
       return res
         .status(405)
         .json({ error: `Method ${req.method} not allowed, use POST` });
     }
 
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+    // 🔥 import dynamique
+    const { db } = await import("../../src/db/client");
+    const { metaux } = await import("../../src/db/schema");
+
+    const body =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
 
     const {
       userId,
@@ -59,8 +60,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (err: any) {
     console.error("Error in /api/metaux/create:", err);
-    return res
-      .status(500)
-      .json({ error: err.message || "Erreur serveur /api/metaux/create" });
+    return res.status(500).json({
+      error:
+        err?.message ||
+        String(err) ||
+        "Erreur serveur /api/metaux/create (voir logs)",
+    });
   }
 }
