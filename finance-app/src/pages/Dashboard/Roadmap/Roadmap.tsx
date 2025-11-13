@@ -22,20 +22,12 @@ const roadmapColumns: {
     key: "active",
     items: [
       {
-        title: "Page Mes comptes bancaires",
-        label: "Core app",
+        title: "Rafraichissement de la page Métaux",
+        label: "Technical Features",
         quarter: "Q4 2025",
         status: "active",
         description:
-          "Création / édition des comptes, affichage du solde et première vue d’ensemble du patrimoine.",
-      },
-      {
-        title: "Suivi des paiements récurrents",
-        label: "Cashflow",
-        quarter: "Q4 2025",
-        status: "active",
-        description:
-          "Abonnements, loyers, charges : visualisation des sorties fixes mois par mois.",
+          "Après ajout ou suppression d’un métal, la page se met à jour automatiquement pour refléter les changements. Ajout des taux FX en temps réel pour conversions précises. Ajout des cours des métaux en quasi direct.",
       },
     ],
   },
@@ -44,14 +36,6 @@ const roadmapColumns: {
     key: "planned",
     items: [
       {
-        title: "Budgets mensuels intelligents",
-        label: "Budgeting",
-        quarter: "Q1 2026",
-        status: "planned",
-        description:
-          "Budgets par catégorie, suivi du reste à dépenser et alertes en cas de dépassement.",
-      },
-      {
         title: "Rapports d’investissement",
         label: "Invest",
         quarter: "Q1 2026",
@@ -59,6 +43,70 @@ const roadmapColumns: {
         description:
           "Vue consolidée des performances (ETF, actions, crowdfunding, métaux, crypto…).",
       },
+      {
+        title: "Crowdfunding",
+        label: "Diversification",
+        quarter: "2026",
+        status: "planned",
+        description:
+          "Intégration des plateformes de crowdfunding immobilier et d’entreprise.",
+      },
+      {
+        title: "Suivi des cryptomonnaies",
+        label: "Diversification",
+        quarter: "2026",
+        status: "planned",
+        description:
+          "Ajout des portefeuilles crypto pour un suivi global des investissements.",
+      },
+      {
+        title: "Actions",
+        label: "Diversification",
+        quarter: "2026",
+        status: "planned",
+        description:
+          "Ajout d'une liste d'actions pour suivre et analyser ses investissements en bourse.",
+      },
+      {
+        title: "ETF",
+        label: "Diversification",
+        quarter: "2026",
+        status: "planned",
+        description:
+          "Ajout d'une liste d'ETF pour suivre et analyser ses investissements en fonds indiciels.",
+      },
+      {
+        title: "Immobilier SCPI",
+        label: "Diversification",
+        quarter: "2026",
+        status: "planned",
+        description:
+          "Ajout du suivi des investissements en SCPI pour une vision complète de son patrimoine immobilier.",
+      },
+      {
+        title: "Paramètres",
+        label: "UX",
+        quarter: "Q1 2026",
+        status: "planned",
+        description:
+          "Personnalisation des devises par défaut, préférences d’affichage et gestion du compte utilisateur.",
+        },
+        {
+          title: "Import / Export des données",
+          label: "UX",
+          quarter: "Q1 2026",
+          status: "planned",
+          description:
+            "Fonctionnalités pour importer et exporter les données utilisateur pour une meilleure gestion et sauvegarde.",
+        },
+        {
+          title: "Aperçu personnalisé du tableau de bord",
+          label: "UX",
+          quarter: "2026",
+          status: "planned",
+          description:
+            "Choix des sections à afficher sur le tableau de bord pour une expérience utilisateur adaptée.",
+        }
     ],
   },
   {
@@ -112,12 +160,12 @@ export default function Roadmap() {
       <section className={styles.meta}>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Dernière mise à jour</div>
-          <div className={styles.metaValue}>Novembre 2025</div>
+          <div className={styles.metaValue}>13 Novembre 2025</div>
         </div>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Objectif</div>
           <div className={styles.metaValue}>
-            Construire un outil simple, clair et motivant pour piloter ses finances personnelles.
+            Construire un outil simple, clair et motivant pour piloter ses investissements personnels.
           </div>
         </div>
       </section>
