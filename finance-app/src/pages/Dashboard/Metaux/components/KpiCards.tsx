@@ -1,8 +1,18 @@
 // src/pages/Dashboard/Metaux/components/KpiCards.tsx
+import { useState, useMemo } from "react";
 import styles from "./KpiCards.module.css";
 import { useFx } from "../hooks/useFx";
 import { useUser } from "@stackframe/react";
 import { useMetaux } from "../hooks/useMetaux";
+
+type MetalType = "or" | "argent" | "platine" | "palladium";
+
+const METALS: { key: MetalType; label: string; color: string }[] = [
+  { key: "or", label: "Or", color: "#f8d44c" },
+  { key: "argent", label: "Argent", color: "#d1d1d1" },
+  { key: "platine", label: "Platine", color: "#8bc3ff" },
+  { key: "palladium", label: "Palladium", color: "#ff9dbb" },
+];
 
 function normalizeWeightToGrams(poids: number, unite: "g" | "oz") {
   if (unite === "oz") return poids * 31.1035;
@@ -10,7 +20,7 @@ function normalizeWeightToGrams(poids: number, unite: "g" | "oz") {
 }
 
 function formatWeight(weightG: number) {
-  if (!Number.isFinite(weightG)) return "-";
+  if (!Number.isFinite(weightG) || weightG === 0) return "-";
   if (weightG >= 1000) {
     const kg = weightG / 1000;
     return `${kg.toFixed(2)} kg`;
@@ -24,24 +34,62 @@ export default function KpiCards() {
   const userId = user?.id;
   const { rows } = useMetaux(userId);
 
-  let totalInvested = 0;
-  let totalWeightG = 0;
-  let count = 0;
+  const [selectedMetal, setSelectedMetal] = useState<MetalType>("or");
 
-  if (rows && rows.length > 0) {
-    count = rows.length;
-    for (const r of rows) {
-      totalInvested += convertForDisplay(r.prixAchat, r.deviseAchat);
-      totalWeightG += normalizeWeightToGrams(r.poids, r.unite);
+  const {
+    totalInvested,
+    totalWeightG,
+    count,
+    avgPricePerGram,
+  } = useMemo(() => {
+    if (!rows || rows.length === 0) {
+      return {
+        totalInvested: 0,
+        totalWeightG: 0,
+        count: 0,
+        avgPricePerGram: 0,
+      };
     }
-  }
 
-  const avgTicket = count > 0 ? totalInvested / count : 0;
+    const filtered = rows.filter((r) => r.type === selectedMetal);
+
+    if (filtered.length === 0) {
+      return {
+        totalInvested: 0,
+        totalWeightG: 0,
+        count: 0,
+        avgPricePerGram: 0,
+      };
+    }
+
+    let invested = 0;
+    let weightG = 0;
+
+    for (const r of filtered) {
+      invested += convertForDisplay(r.prixAchat, r.deviseAchat);
+      weightG += normalizeWeightToGrams(r.poids, r.unite);
+    }
+
+    const avg = weightG > 0 ? invested / weightG : 0;
+
+    return {
+      totalInvested: invested,
+      totalWeightG: weightG,
+      count: filtered.length,
+      avgPricePerGram: avg,
+    };
+  }, [rows, selectedMetal, convertForDisplay]);
 
   const formatterMoney = new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: displayCurrency,
     maximumFractionDigits: 0,
+  });
+
+  const formatterPricePerGram = new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: displayCurrency,
+    maximumFractionDigits: 2,
   });
 
   const items = [
@@ -52,9 +100,9 @@ export default function KpiCards() {
       color: "#38bdf8",
     },
     {
-      label: "Ticket moyen",
-      value: avgTicket,
-      type: "money" as const,
+      label: "Prix moyen / g",
+      value: avgPricePerGram,
+      type: "pricePerGram" as const,
       color: "#f97316",
     },
     {
@@ -71,28 +119,88 @@ export default function KpiCards() {
     },
   ];
 
+  const selectedMeta = METALS.find((m) => m.key === selectedMetal);
+
   return (
-    <div className={styles.grid}>
-      {items.map((it) => {
-        let display: string;
+    <div>
+      {/* Petit sélecteur de métal discret au-dessus des cartes */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          marginBottom: 12,
+          flexWrap: "wrap",
+          fontSize: 12,
+        }}
+      >
+        <span style={{ opacity: 0.7 }}>M\u00e9tal analys\u00e9 :</span>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {METALS.map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => setSelectedMetal(m.key)}
+              style={{
+                borderRadius: 999,
+                padding: "3px 9px",
+                border:
+                  m.key === selectedMetal
+                    ? "1px solid rgba(148, 163, 184, 0.9)"
+                    : "1px solid rgba(148, 163, 184, 0.25)",
+                background:
+                  m.key === selectedMetal
+                    ? "rgba(15,23,42,0.9)"
+                    : "rgba(15,23,42,0.4)",
+                color: "#e5e7eb",
+                cursor: "pointer",
+                fontSize: 11,
+              }}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        if (it.type === "money") {
-          display = formatterMoney.format(it.value || 0);
-        } else if (it.type === "weight") {
-          display = formatWeight(it.value || 0);
-        } else {
-          display = String(it.value || 0);
-        }
+      {/* Tes cartes existantes */}
+      <div className={styles.grid}>
+        {items.map((it) => {
+          let display: string;
 
-        return (
-          <div className={styles.card} key={it.label}>
-            <div className={styles.label}>{it.label}</div>
-            <div className={styles.value} style={{ color: it.color }}>
-              {display}
+          if (it.type === "money") {
+            display = formatterMoney.format(it.value || 0);
+          } else if (it.type === "weight") {
+            display = formatWeight(it.value || 0);
+          } else if (it.type === "pricePerGram") {
+            display =
+              it.value > 0
+                ? `${formatterPricePerGram.format(it.value)} / g`
+                : "-";
+          } else {
+            display = String(it.value || 0);
+          }
+
+          return (
+            <div className={styles.card} key={it.label}>
+              <div className={styles.label}>
+                {it.label}
+                {it.label === "Montant investi" && selectedMeta
+                  ? ` (${selectedMeta.label})`
+                  : null}
+                {it.label === "Poids total" && selectedMeta
+                  ? ` (${selectedMeta.label})`
+                  : null}
+                {it.label === "Prix moyen / g" && selectedMeta
+                  ? ` (${selectedMeta.label})`
+                  : null}
+              </div>
+              <div className={styles.value} style={{ color: it.color }}>
+                {display}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
