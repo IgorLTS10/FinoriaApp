@@ -5,7 +5,6 @@ import { metaux } from "../../src/db/schema";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // ✅ pour debug, on log la méthode
     console.log("METHOD /api/metaux/create:", req.method);
 
     if (req.method !== "POST") {
@@ -14,7 +13,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ error: `Method ${req.method} not allowed, use POST` });
     }
 
-    // Vercel gère déjà JSON, mais on sécurise au cas où
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
 
     const {
@@ -61,6 +59,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (err: any) {
     console.error("Error in /api/metaux/create:", err);
-    return res.status(500).json({ error: err.message || "Erreur serveur" });
+    return res
+      .status(500)
+      .json({ error: err.message || "Erreur serveur /api/metaux/create" });
   }
 }
