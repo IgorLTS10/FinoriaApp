@@ -16,7 +16,7 @@ export default function Metaux() {
   const user = useUser();
   const userId = (user as any)?.id as string | undefined;
 
-  const { rows, loading, error, addMetal } = useMetaux(userId);
+  const { rows, loading, error, addMetal, deleteMetal } = useMetaux(userId);
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -30,11 +30,19 @@ export default function Metaux() {
           <PieChartBox />
         </div>
 
-        <MetalsTable
+       <MetalsTable
           rows={rows}
           loading={loading}
           error={error || undefined}
           onAddClick={() => setModalOpen(true)}
+          onDelete={async (id) => {
+            try {
+              await deleteMetal(id);
+            } catch (err: any) {
+              console.error(err);
+              alert(err.message || "Erreur lors de la suppression");
+            }
+          }}
         />
 
         <AddMetalModal

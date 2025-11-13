@@ -8,9 +8,16 @@ type Props = {
   loading: boolean;
   error?: string;
   onAddClick: () => void;
+  onDelete: (id: string) => void;
 };
 
-export default function MetalsTable({ rows, loading, error, onAddClick }: Props) {
+export default function MetalsTable({
+  rows,
+  loading,
+  error,
+  onAddClick,
+  onDelete,
+}: Props) {
   const { displayCurrency, convertForDisplay } = useFx();
 
   const formatter = new Intl.NumberFormat("fr-FR", {
@@ -37,25 +44,29 @@ export default function MetalsTable({ rows, loading, error, onAddClick }: Props)
               <th>Prix d’achat</th>
               <th>Valeur (affichée)</th>
               <th>Devise d’origine</th>
+              <th></th> {/* colonne actions */}
             </tr>
           </thead>
 
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5}>Chargement...</td>
+                <td colSpan={6}>Chargement...</td>
               </tr>
             )}
 
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={5}>Aucune position pour l’instant.</td>
+                <td colSpan={6}>Aucune position pour l’instant.</td>
               </tr>
             )}
 
             {!loading &&
               rows.map((r) => {
-                const displayValue = convertForDisplay(r.prixAchat, r.deviseAchat);
+                const displayValue = convertForDisplay(
+                  r.prixAchat,
+                  r.deviseAchat
+                );
 
                 return (
                   <tr key={r.id}>
@@ -68,6 +79,24 @@ export default function MetalsTable({ rows, loading, error, onAddClick }: Props)
                     </td>
                     <td>{formatter.format(displayValue)}</td>
                     <td>{r.deviseAchat}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className={styles.deleteButton}
+                        title="Supprimer cet achat"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Supprimer définitivement cet achat ?"
+                            )
+                          ) {
+                            onDelete(r.id);
+                          }
+                        }}
+                      >
+                        🗑
+                      </button>
+                    </td>
                   </tr>
                 );
               })}

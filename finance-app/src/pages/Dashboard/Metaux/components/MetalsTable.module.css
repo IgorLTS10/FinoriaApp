@@ -58,3 +58,21 @@ tr:hover td {
   color: #ff9c9c;
   font-size: 13px;
 }
+
+.deleteButton {
+  background: transparent;
+  border: none;
+  color: #f97373;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.deleteButton:hover {
+  color: #ef4444;
+  transform: scale(1.1);
+}

@@ -51,9 +51,8 @@ export function useMetaux(userId?: string) {
     if (userId) refresh();
   }, [userId, refresh]);
 
-  // ✅ ICI : fonction interne, PAS exportée
   const addMetal = useCallback(
-    async (payload: Omit<NewMetalPayload, "userId">) => {
+    async (payload: Omit<MetalRow, "id" | "userId">) => {
       if (!userId) return;
 
       const res = await fetch("/api/metaux/create", {
@@ -64,7 +63,6 @@ export function useMetaux(userId?: string) {
 
       const text = await res.text();
       let json: any = null;
-
       try {
         json = text ? JSON.parse(text) : null;
       } catch {
@@ -74,17 +72,44 @@ export function useMetaux(userId?: string) {
       if (!res.ok) {
         const message =
           json?.error ||
-          `Erreur HTTP ${res.status} : ${
-            text?.slice(0, 120) || "Réponse vide"
-          }`;
+          `Erreur HTTP ${res.status} : ${text?.slice(0, 120) || "Réponse vide"}`;
         throw new Error(message);
       }
 
-      const row = json.row;
+      const row = json.row as MetalRow;
       setRows((prev) => [...prev, row]);
     },
     [userId]
   );
 
-  return { rows, loading, error, refresh, addMetal };
+  const deleteMetal = useCallback(
+    async (id: string) => {
+      if (!userId) return;
+      const res = await fetch("/api/metaux/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, userId }),
+      });
+
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+
+      if (!res.ok) {
+        const message =
+          json?.error ||
+          `Erreur HTTP ${res.status} : ${text?.slice(0, 120) || "Réponse vide"}`;
+        throw new Error(message);
+      }
+
+      setRows((prev) => prev.filter((r) => r.id !== id));
+    },
+    [userId]
+  );
+
+  return { rows, loading, error, refresh, addMetal, deleteMetal };
 }
