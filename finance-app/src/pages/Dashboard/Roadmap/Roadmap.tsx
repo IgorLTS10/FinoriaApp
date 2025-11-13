@@ -29,6 +29,22 @@ const roadmapColumns: {
         description:
           "Après ajout ou suppression d’un métal, la page se met à jour automatiquement pour refléter les changements. Ajout des taux FX en temps réel pour conversions précises. Ajout des cours des métaux en quasi direct.",
       },
+      {
+        title: "Modification du mot de passe",
+        label: "UX",
+        quarter: "Q4 2025",
+        status: "active",
+        description:
+          "Possibilité de changer son mot de passe directement depuis le dashboard utilisateur.",
+      },
+      {
+        title: "Possibilité de connexion avec Google",
+        label: "UX",
+        quarter: "Q4 2025",
+        status: "active",
+        description:
+          "Ajout de l’option de connexion via un compte Google pour simplifier l’accès au dashboard.",
+      }
     ],
   },
   {
