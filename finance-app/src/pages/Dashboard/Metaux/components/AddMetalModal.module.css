@@ -112,3 +112,46 @@ textarea:focus {
   opacity: 0.6;
   cursor: default;
 }
+
+/* inputs, select, textarea : déjà global */
+input,
+select,
+textarea {
+  background: rgba(9, 14, 30, 0.95);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+/* survol / focus plus clean */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(56, 203, 255, 0.4);
+}
+
+/* select stylé (fond sombre, options foncées) */
+select {
+  cursor: pointer;
+}
+
+/* certains navigateurs respectent le background des options */
+select option {
+  background: #050816;
+  color: var(--text);
+}
+
+/* Spécifique au date picker : champ blanc, texte foncé */
+input[type="date"] {
+  background: #ffffff;
+  color: #111827;
+}
+
+/* On peut aussi ajuster le calendrier sur certains navigateurs */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0); /* icône foncée sur fond blanc */
+}

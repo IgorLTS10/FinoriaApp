@@ -100,8 +100,8 @@ export default function AddMetalModal({ open, onClose, onSubmit }: Props) {
               Poids
               <div className={styles.inline}>
                 <input
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={poids}
                   onChange={(e) => setPoids(e.target.value)}
                 />
@@ -117,8 +117,8 @@ export default function AddMetalModal({ open, onClose, onSubmit }: Props) {
             <label>
               Prix total
               <input
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 value={prixAchat}
                 onChange={(e) => setPrixAchat(e.target.value)}
               />

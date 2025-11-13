@@ -51,20 +51,40 @@ export function useMetaux(userId?: string) {
     if (userId) refresh();
   }, [userId, refresh]);
 
-  async function addMetal(payload: Omit<NewMetalPayload, "userId">) {
-    if (!userId) return;
-    const res = await fetch("/api/metaux/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, userId }),
-    });
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      throw new Error(json.error || "Erreur lors de l'ajout");
-    }
-    const json = await res.json();
-    setRows((prev) => [...prev, json.row]);
-  }
+  // ✅ ICI : fonction interne, PAS exportée
+  const addMetal = useCallback(
+    async (payload: Omit<NewMetalPayload, "userId">) => {
+      if (!userId) return;
+
+      const res = await fetch("/api/metaux/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, userId }),
+      });
+
+      const text = await res.text();
+      let json: any = null;
+
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+
+      if (!res.ok) {
+        const message =
+          json?.error ||
+          `Erreur HTTP ${res.status} : ${
+            text?.slice(0, 120) || "Réponse vide"
+          }`;
+        throw new Error(message);
+      }
+
+      const row = json.row;
+      setRows((prev) => [...prev, row]);
+    },
+    [userId]
+  );
 
   return { rows, loading, error, refresh, addMetal };
 }

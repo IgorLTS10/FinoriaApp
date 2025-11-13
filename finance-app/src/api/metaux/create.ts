@@ -1,4 +1,4 @@
-// src/api/metaux/create.ts
+// api/metaux/create.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "../../db/client";
 import { metaux } from "../../db/schema";
@@ -6,7 +6,10 @@ import { metaux } from "../../db/schema";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).end();
+      // 🔥 toujours renvoyer du JSON, même en erreur
+      return res
+        .status(405)
+        .json({ error: `Method ${req.method} not allowed, use POST` });
     }
 
     const body = req.body as any;
@@ -21,10 +24,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       dateAchat,
       fournisseur,
       notes,
-    } = body;
+    } = body || {};
 
     if (!userId || !type || !poids || !prixAchat || !deviseAchat || !dateAchat) {
-      return res.status(400).json({ error: "Missing fields" });
+      return res.status(400).json({
+        error:
+          "Champs manquants : userId, type, poids, prixAchat, deviseAchat, dateAchat sont obligatoires.",
+      });
     }
 
     const [inserted] = await db
@@ -51,6 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    console.error("Error in /api/metaux/create:", err);
+    return res.status(500).json({ error: err.message || "Erreur serveur" });
   }
 }
