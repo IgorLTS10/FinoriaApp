@@ -1,13 +1,11 @@
 // api/metaux/list.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { eq } from "drizzle-orm";
+import { db } from "../../src/db/client";
+import { metaux } from "../../src/db/schema";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // 🔥 import dynamique -> si db/client.ts plante, on le catch ici
-    const { db } = await import("../../src/db/client");
-    const { metaux } = await import("../../src/db/schema");
-
     const userId = req.query.userId as string | undefined;
     if (!userId) {
       return res.status(400).json({ error: "Missing userId" });
@@ -28,10 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (err: any) {
     console.error("Error in /api/metaux/list:", err);
     return res.status(500).json({
-      error:
-        err?.message ||
-        String(err) ||
-        "Erreur serveur /api/metaux/list (voir logs)",
+      error: err?.message || "Erreur serveur /api/metaux/list",
     });
   }
 }
