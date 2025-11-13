@@ -1,0 +1,12 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 22px;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 22px;
+}

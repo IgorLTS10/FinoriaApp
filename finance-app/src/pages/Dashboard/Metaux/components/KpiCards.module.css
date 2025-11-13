@@ -1,0 +1,31 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap: 18px;
+}
+
+.card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+
+  transition: transform .15s, border-color .15s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.label {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.value {
+  font-size: 22px;
+  font-weight: 700;
+}

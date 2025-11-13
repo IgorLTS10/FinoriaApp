@@ -13,29 +13,38 @@ import AuthModal from "./components/auth/AuthModal";
 import { useAuthModal } from "./state/authModal";
 import TooltipProviderWrapper from "./auth/TooltipProviderWrapper";
 import { useUser } from "@stackframe/react"; // ✅
+import Metaux from "./pages/Dashboard/Metaux/Metaux";
 
 function QueryAuthController() {
   const { open, close } = useAuthModal();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const user = useUser(); // devient non-null après sign-in
+  const user = useUser();
 
-  const redirect = params.get("redirect") || "/dashboard";
+  const redirect = params.get("redirect");
   const auth = params.get("auth");
 
+  // Ouvre le modal si ?auth=open
   React.useEffect(() => {
     if (auth === "open") open("signIn");
   }, [auth, open]);
 
+  // Si on a un redirect et que user est loggé → on redirige une fois
   React.useEffect(() => {
-    if (user) {
+    if (user && redirect) {
       close();
       navigate(redirect, { replace: true });
+
+      // on enlève redirect de l'url pour ne PAS retrigger
+      params.delete("redirect");
+      params.delete("auth");
+      setParams(params);
     }
-  }, [user, redirect, navigate, close]);
+  }, [user, redirect, navigate, close, params, setParams]);
 
   return null;
 }
+
 
 function Root() {
   const { mode, close } = useAuthModal();
@@ -43,6 +52,7 @@ function Root() {
     <>
       <Routes>
         <Route path="/" element={<App />} />
+
         <Route
           path="/dashboard"
           element={
@@ -50,8 +60,12 @@ function Root() {
               <Dashboard />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<div>Bienvenue sur votre dashboard</div>} />
+          <Route path="metaux" element={<Metaux />} />
+        </Route>
       </Routes>
+
       <QueryAuthController />
       <AuthModal mode={mode} onClose={close} />
     </>

@@ -1,0 +1,88 @@
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 20px 35px rgba(0,0,0,0.22),
+    0 0 18px rgba(56, 203, 255, 0.18);
+}
+
+/* halo animé */
+.card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -30%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 30%, rgba(56,203,255,0.12), transparent 60%);
+  animation: glow 8s linear infinite;
+}
+
+@keyframes glow {
+  0% { transform: rotate(0deg) }
+  100% { transform: rotate(360deg) }
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.value {
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.delta {
+  margin-top: 4px;
+  font-size: 15px;
+  color: #94ffc2;
+}
+
+.right {
+  width: 180px;
+  opacity: 0.85;
+}
+
+/* Ajoute / modifie ces règles */
+
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* ... le reste que tu as déjà ... */
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  width: 190px;
+}
+
+.currency {
+  display: flex;
+  justify-content: flex-end;
+}
+

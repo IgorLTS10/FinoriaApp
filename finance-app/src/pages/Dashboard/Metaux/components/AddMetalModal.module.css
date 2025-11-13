@@ -1,0 +1,114 @@
+/* src/pages/Dashboard/Metaux/components/AddMetalModal.module.css */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 6, 18, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  width: 480px;
+  max-width: 90vw;
+
+  background: radial-gradient(circle at 0 0, rgba(56,203,255,0.15), transparent 55%),
+              rgba(10,16,30,0.98);
+  border-radius: 18px;
+  padding: 20px 20px 16px;
+
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+}
+
+.title {
+  margin: 0 0 14px;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  font-size: 13px;
+  color: var(--muted);
+  gap: 4px;
+}
+
+input,
+select,
+textarea {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.inline {
+  display: flex;
+  gap: 6px;
+}
+
+.inline select {
+  max-width: 80px;
+}
+
+.error {
+  color: #ff9c9c;
+  font-size: 13px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.primary,
+.secondary {
+  border-radius: 999px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary {
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-color: transparent;
+  color: #041220;
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
