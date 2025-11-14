@@ -8,5 +8,11 @@
       "source": "/(.*)",
       "destination": "/"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/crypto/prices",
+      "schedule": "0 2 * * *"
+    }
   ]
 }
