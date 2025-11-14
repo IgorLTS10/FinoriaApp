@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+// src/pages/Dashboard/Crypto/Crypto.tsx
+import React, { useMemo, useState, useRef } from "react";
 import { useUser } from "@stackframe/react";
 import styles from "./Crypto.module.css";
 import { useCryptoPositions } from "./hooks/useCryptoPositions";
@@ -30,7 +31,6 @@ function aggregateBySymbol(
   for (const row of rows) {
     const key = row.symbol.toUpperCase();
     const existing = map.get(key);
-
     const rowCost = row.buyTotal || 0;
 
     if (!existing) {
@@ -77,12 +77,11 @@ export default function Crypto() {
     [rows]
   );
 
-  const [priceReloadKey, setPriceReloadKey] = useState(0);
   const {
     pricesBySymbol,
     loading: loadingPrices,
     error: errorPrices,
-  } = useCryptoPrices(symbols, "EUR", priceReloadKey);
+  } = useCryptoPrices(symbols, "EUR");
 
   const aggregated = useMemo(
     () => aggregateBySymbol(rows, pricesBySymbol),
@@ -94,8 +93,7 @@ export default function Crypto() {
     [aggregated]
   );
   const totalCurrentValue = useMemo(
-    () =>
-      aggregated.reduce((acc, c) => acc + (c.currentValue ?? 0), 0),
+    () => aggregated.reduce((acc, c) => acc + (c.currentValue ?? 0), 0),
     [aggregated]
   );
   const totalPnlAbs = totalCurrentValue - totalCostBasis;
@@ -114,26 +112,6 @@ export default function Crypto() {
       .sort((a, b) => (a.pnlPct! - b.pnlPct!))[0];
   }, [aggregated]);
 
-  async function handleRefreshPrices() {
-    try {
-      // Appel la route serverless de refresh
-      const res = await fetch("/api/crypto/prices/refresh", {
-        method: "POST",
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        console.error("Erreur refresh prices:", txt);
-        alert("Erreur lors du rafraîchissement des prix.");
-        return;
-      }
-      // Force le hook à refetch
-      setPriceReloadKey((k) => k + 1);
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || "Erreur lors du rafraîchissement des prix.");
-    }
-  }
-
   return (
     <div className={styles.page}>
       {/* HERO / RÉSUMÉ */}
@@ -146,23 +124,13 @@ export default function Crypto() {
           </p>
         </div>
 
-        <div className={styles.heroActions}>
-          <button
-            className={styles.refreshButton}
-            type="button"
-            onClick={handleRefreshPrices}
-            disabled={loadingPrices}
-          >
-            {loadingPrices ? "Rafraîchissement..." : "Rafraîchir les prix"}
-          </button>
-          <button
-            className={styles.addButton}
-            type="button"
-            onClick={() => setAddModalOpen(true)}
-          >
-            + Ajouter une position
-          </button>
-        </div>
+        <button
+          className={styles.addButton}
+          type="button"
+          onClick={() => setAddModalOpen(true)}
+        >
+          + Ajouter une position
+        </button>
       </section>
 
       {/* KPIs principaux */}
@@ -177,16 +145,14 @@ export default function Crypto() {
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Valeur actuelle</div>
           <div className={styles.kpiValue}>
-            {totalCurrentValue
-              ? `${totalCurrentValue.toFixed(2)} €`
-              : "—"}
+            {totalCurrentValue ? `${totalCurrentValue.toFixed(2)} €` : "—"}
           </div>
           <div className={styles.kpiHint}>
             {symbols.length === 0
               ? "Ajoute des positions pour voir la valeur de ton portefeuille."
               : loadingPrices
               ? "Mise à jour des prix en cours..."
-              : "Prix basés sur la dernière mise à jour."}
+              : "Prix basés sur la dernière mise à jour en base."}
           </div>
         </div>
 
@@ -400,7 +366,7 @@ export default function Crypto() {
 }
 
 /* =====================================================
- *  Modal d'ajout de position crypto
+ *  Modal d'ajout de position crypto + autocomplete symbole
  * ===================================================== */
 
 type AddCryptoModalProps = {
@@ -408,10 +374,16 @@ type AddCryptoModalProps = {
   onSubmit: (payload: NewCryptoPayload) => Promise<void> | void;
 };
 
+type CoinSuggestion = {
+  symbol: string;
+  name: string;
+  logoUrl?: string;
+};
+
 function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
   const [symbol, setSymbol] = useState("");
   const [name, setName] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState("");
   const [buyPriceUnit, setBuyPriceUnit] = useState("");
   const [buyTotal, setBuyTotal] = useState("");
@@ -419,6 +391,55 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
   const [buyDate, setBuyDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [suggestions, setSuggestions] = useState<CoinSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const searchTimeoutRef = useRef<number | null>(null);
+
+  function handleSymbolChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setSymbol(value.toUpperCase());
+    setShowSuggestions(true);
+    setSearchError(null);
+    setLogoUrl(undefined);
+
+    if (searchTimeoutRef.current !== null) {
+      window.clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!value.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    // Debounce
+    searchTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        setSearchLoading(true);
+        const res = await fetch(`/api/crypto/search?q=${encodeURIComponent(value)}`);
+        if (!res.ok) throw new Error("Erreur lors de la recherche de cryptos");
+        const json = await res.json();
+        const list = (json.suggestions || []) as CoinSuggestion[];
+        setSuggestions(list);
+      } catch (err: any) {
+        console.error(err);
+        setSearchError(err.message || "Erreur lors de la recherche");
+        setSuggestions([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 250) as unknown as number;
+  }
+
+  function handleSuggestionClick(s: CoinSuggestion) {
+    setSymbol(s.symbol.toUpperCase());
+    setName(s.name);
+    setLogoUrl(s.logoUrl);
+    setShowSuggestions(false);
+    setSuggestions([]);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -437,7 +458,7 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
       const payload: NewCryptoPayload = {
         symbol: symbol.trim().toUpperCase(),
         name: name.trim() || undefined,
-        logoUrl: logoUrl.trim() || undefined,
+        logoUrl,
         quantity: qty,
         buyPriceUnit: unit,
         buyTotal: total,
@@ -466,12 +487,56 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
           <div className={styles.modalRow}>
             <label className={styles.modalLabel}>
               Crypto (symbole)
-              <input
-                className={styles.modalInput}
-                placeholder="BTC, ETH, SOL..."
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value)}
-              />
+              <div className={styles.symbolWrapper}>
+                <input
+                  className={styles.modalInput}
+                  placeholder="BTC, ETH, SOL..."
+                  value={symbol}
+                  onChange={handleSymbolChange}
+                  onFocus={() => symbol && setShowSuggestions(true)}
+                />
+                {showSuggestions && (
+                  <div className={styles.symbolSuggestions}>
+                    {searchLoading && (
+                      <div className={styles.suggestionEmpty}>Recherche...</div>
+                    )}
+                    {searchError && (
+                      <div className={styles.suggestionEmpty}>
+                        {searchError}
+                      </div>
+                    )}
+                    {!searchLoading &&
+                      !searchError &&
+                      suggestions.map((s) => (
+                        <div
+                          key={`${s.symbol}-${s.name}`}
+                          className={styles.suggestionItem}
+                          onClick={() => handleSuggestionClick(s)}
+                        >
+                          {s.logoUrl && (
+                            <img
+                              src={s.logoUrl}
+                              alt={s.symbol}
+                              className={styles.suggestionLogo}
+                            />
+                          )}
+                          <div>
+                            <div className={styles.suggestionSymbol}>{s.symbol}</div>
+                            <div className={styles.suggestionName}>{s.name}</div>
+                          </div>
+                        </div>
+                      ))}
+                    {!searchLoading &&
+                      !searchError &&
+                      suggestions.length === 0 &&
+                      symbol.trim() && (
+                        <div className={styles.suggestionEmpty}>
+                          Aucune crypto trouvée pour &quot;{symbol}&quot;
+                        </div>
+                      )}
+                  </div>
+                )}
+              </div>
             </label>
 
             <label className={styles.modalLabel}>
@@ -484,16 +549,6 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
               />
             </label>
           </div>
-
-          <label className={styles.modalLabel}>
-            Logo (URL)
-            <input
-              className={styles.modalInput}
-              placeholder="https://..."
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-            />
-          </label>
 
           <div className={styles.modalRow}>
             <label className={styles.modalLabel}>
