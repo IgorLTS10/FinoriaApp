@@ -1,7 +1,7 @@
 // src/api/fx/latest.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { db } from "../../db/client";
-import { fxRates } from "../../db/schema";
+import { db } from "../../db/client.js";
+import { fxRates } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
