@@ -15,6 +15,7 @@ import TooltipProviderWrapper from "./auth/TooltipProviderWrapper";
 import { useUser } from "@stackframe/react"; // ✅
 import Metaux from "./pages/Dashboard/Metaux/Metaux";
 import Roadmap from "./pages/Dashboard/Roadmap/Roadmap";
+import Crypto from "./pages/Dashboard/Crypto/Crypto"
 
 function QueryAuthController() {
   const { open, close } = useAuthModal();
@@ -65,6 +66,7 @@ function Root() {
           <Route index element={<div>Bienvenue sur votre dashboard</div>} />
           <Route path="metaux" element={<Metaux />} />
           <Route path="roadmap" element={<Roadmap />} />
+          <Route path="crypto" element={<Crypto/>} />
         </Route>
       </Routes>
 
