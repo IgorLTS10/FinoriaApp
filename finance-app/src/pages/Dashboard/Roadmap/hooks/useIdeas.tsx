@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Roadmap/hooks/useIdeas.tsx
 import { useCallback, useEffect, useState } from "react";
 
 export type IdeaRow = {
@@ -18,7 +17,8 @@ export function useIdeas(userId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/ideas/list?userId=${userId}`);
+      // ⬇️ avant : /api/ideas/list
+      const res = await fetch(`/api/ideas?userId=${userId}`);
       if (!res.ok) throw new Error("Erreur lors du chargement des idées");
       const json = await res.json();
       setRows(json.data || []);
@@ -37,7 +37,8 @@ export function useIdeas(userId?: string) {
     async (content: string) => {
       if (!userId) return;
 
-      const res = await fetch("/api/ideas/create", {
+      // ⬇️ avant : /api/ideas/create
+      const res = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, content }),

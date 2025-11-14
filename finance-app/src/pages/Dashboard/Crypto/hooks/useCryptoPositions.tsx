@@ -43,7 +43,7 @@ export function useCryptoPositions(userId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/crypto/list?userId=${userId}`);
+      const res = await fetch(`/api/crypto/positions?userId=${userId}`);
       if (!res.ok) throw new Error("Erreur lors du chargement des positions crypto");
       const json = await res.json();
       setRows(json.data || []);
@@ -62,11 +62,11 @@ export function useCryptoPositions(userId?: string) {
     async (payload: NewCryptoPayload) => {
       if (!userId) return;
 
-      const res = await fetch("/api/crypto/create", {
+      const res = await fetch("/api/crypto/positions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, userId }),
-      });
+    });
 
       const text = await res.text();
       let json: any = null;
@@ -93,11 +93,11 @@ export function useCryptoPositions(userId?: string) {
     async (id: string) => {
       if (!userId) return;
 
-      const res = await fetch("/api/crypto/delete", {
-        method: "POST",
+      const res = await fetch("/api/crypto/positions", {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, userId }),
-      });
+        });
 
       const text = await res.text();
       let json: any = null;

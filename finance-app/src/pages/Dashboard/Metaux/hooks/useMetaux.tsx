@@ -36,7 +36,7 @@ export function useMetaux(userId?: string) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/metaux/list?userId=${userId}`);
+      const res = await fetch(`/api/metaux?userId=${userId}`);
       if (!res.ok) throw new Error("Erreur lors du chargement");
       const json = await res.json();
       setRows(json.data || []);
@@ -55,7 +55,7 @@ export function useMetaux(userId?: string) {
     async (payload: Omit<MetalRow, "id" | "userId">) => {
       if (!userId) return;
 
-      const res = await fetch("/api/metaux/create", {
+      const res = await fetch("/api/metaux", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, userId }),
@@ -85,8 +85,8 @@ export function useMetaux(userId?: string) {
   const deleteMetal = useCallback(
     async (id: string) => {
       if (!userId) return;
-      const res = await fetch("/api/metaux/delete", {
-        method: "POST",
+      const res = await fetch("/api/metaux", {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, userId }),
       });

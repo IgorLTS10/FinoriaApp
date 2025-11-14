@@ -41,11 +41,11 @@ export function useCryptoPrices(
         setError(null);
 
         const res = await fetch(
-          `/api/crypto/prices/list?symbols=${encodeURIComponent(
-            symbolsPart
-          )}&currency=${encodeURIComponent(currency)}`,
-          { signal: abort.signal }
-        );
+            `/api/crypto/prices?symbols=${encodeURIComponent(
+                symbolsPart
+            )}&currency=${encodeURIComponent(currency)}`,
+            { signal: abort.signal }
+            );
 
         if (!res.ok) throw new Error("Erreur lors du chargement des prix crypto");
 
