@@ -1,9 +1,9 @@
-// src/pages/Dashboard/Crypto/Crypto.tsx
 import React, { useMemo, useState } from "react";
 import { useUser } from "@stackframe/react";
 import styles from "./Crypto.module.css";
 import { useCryptoPositions } from "./hooks/useCryptoPositions";
-import type {CryptoPositionRow, NewCryptoPayload} from "./hooks/useCryptoPositions"
+import type { CryptoPositionRow, NewCryptoPayload } from "./hooks/useCryptoPositions";
+import { useCryptoPrices } from "./hooks/useCryptoPrices";
 
 /** Vue agrégée par symbole pour les cartes */
 type AggregatedCrypto = {
@@ -12,7 +12,7 @@ type AggregatedCrypto = {
   logoUrl?: string | null;
   totalQuantity: number;
   costBasis: number;        // somme des buyTotal
-  currentPrice?: number;    // à brancher avec les prix plus tard
+  currentPrice?: number;    // prix actuel
   currentValue?: number;
   pnlAbs?: number;
   pnlPct?: number;
@@ -72,8 +72,17 @@ export default function Crypto() {
   const { rows, loading, error, addPosition, deletePosition } = useCryptoPositions(userId);
   const [addModalOpen, setAddModalOpen] = useState(false);
 
-  // TODO: remplacera ce stub par un hook useCryptoPrices plus tard
-  const pricesBySymbol: PricesBySymbol = {};
+  const symbols = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.symbol.toUpperCase()))),
+    [rows]
+  );
+
+  const [priceReloadKey, setPriceReloadKey] = useState(0);
+  const {
+    pricesBySymbol,
+    loading: loadingPrices,
+    error: errorPrices,
+  } = useCryptoPrices(symbols, "EUR", priceReloadKey);
 
   const aggregated = useMemo(
     () => aggregateBySymbol(rows, pricesBySymbol),
@@ -105,6 +114,26 @@ export default function Crypto() {
       .sort((a, b) => (a.pnlPct! - b.pnlPct!))[0];
   }, [aggregated]);
 
+  async function handleRefreshPrices() {
+    try {
+      // Appel la route serverless de refresh
+      const res = await fetch("/api/crypto/prices/refresh", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        console.error("Erreur refresh prices:", txt);
+        alert("Erreur lors du rafraîchissement des prix.");
+        return;
+      }
+      // Force le hook à refetch
+      setPriceReloadKey((k) => k + 1);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Erreur lors du rafraîchissement des prix.");
+    }
+  }
+
   return (
     <div className={styles.page}>
       {/* HERO / RÉSUMÉ */}
@@ -117,13 +146,23 @@ export default function Crypto() {
           </p>
         </div>
 
-        <button
-          className={styles.addButton}
-          type="button"
-          onClick={() => setAddModalOpen(true)}
-        >
-          + Ajouter une position
-        </button>
+        <div className={styles.heroActions}>
+          <button
+            className={styles.refreshButton}
+            type="button"
+            onClick={handleRefreshPrices}
+            disabled={loadingPrices}
+          >
+            {loadingPrices ? "Rafraîchissement..." : "Rafraîchir les prix"}
+          </button>
+          <button
+            className={styles.addButton}
+            type="button"
+            onClick={() => setAddModalOpen(true)}
+          >
+            + Ajouter une position
+          </button>
+        </div>
       </section>
 
       {/* KPIs principaux */}
@@ -138,10 +177,16 @@ export default function Crypto() {
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Valeur actuelle</div>
           <div className={styles.kpiValue}>
-            {totalCurrentValue ? `${totalCurrentValue.toFixed(2)} €` : "Bientôt 📈"}
+            {totalCurrentValue
+              ? `${totalCurrentValue.toFixed(2)} €`
+              : "—"}
           </div>
           <div className={styles.kpiHint}>
-            La valeur actuelle sera calculée une fois l’intégration des prix en place.
+            {symbols.length === 0
+              ? "Ajoute des positions pour voir la valeur de ton portefeuille."
+              : loadingPrices
+              ? "Mise à jour des prix en cours..."
+              : "Prix basés sur la dernière mise à jour."}
           </div>
         </div>
 
@@ -180,6 +225,12 @@ export default function Crypto() {
           </div>
         </div>
       </section>
+
+      {errorPrices && (
+        <div className={styles.errorBox}>
+          Impossible de charger certains prix crypto : {errorPrices}
+        </div>
+      )}
 
       {/* LISTE DES ASSETS SOUS FORME DE CARTES */}
       <section className={styles.cardsSection}>
@@ -230,7 +281,7 @@ export default function Crypto() {
                   <span>
                     {asset.currentValue != null
                       ? `${asset.currentValue.toFixed(2)} €`
-                      : "Bientôt"}
+                      : "—"}
                   </span>
                 </div>
                 <div className={styles.assetRow}>
@@ -349,7 +400,7 @@ export default function Crypto() {
 }
 
 /* =====================================================
- *  Modal d'ajout de position crypto (structure MVP)
+ *  Modal d'ajout de position crypto
  * ===================================================== */
 
 type AddCryptoModalProps = {
@@ -360,6 +411,7 @@ type AddCryptoModalProps = {
 function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
   const [symbol, setSymbol] = useState("");
   const [name, setName] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [quantity, setQuantity] = useState("");
   const [buyPriceUnit, setBuyPriceUnit] = useState("");
   const [buyTotal, setBuyTotal] = useState("");
@@ -385,6 +437,7 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
       const payload: NewCryptoPayload = {
         symbol: symbol.trim().toUpperCase(),
         name: name.trim() || undefined,
+        logoUrl: logoUrl.trim() || undefined,
         quantity: qty,
         buyPriceUnit: unit,
         buyTotal: total,
@@ -431,6 +484,16 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
               />
             </label>
           </div>
+
+          <label className={styles.modalLabel}>
+            Logo (URL)
+            <input
+              className={styles.modalInput}
+              placeholder="https://..."
+              value={logoUrl}
+              onChange={(e) => setLogoUrl(e.target.value)}
+            />
+          </label>
 
           <div className={styles.modalRow}>
             <label className={styles.modalLabel}>
