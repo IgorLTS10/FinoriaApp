@@ -29,6 +29,13 @@
       "when": 1763060649750,
       "tag": "0003_overrated_living_tribunal",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1763148933733,
+      "tag": "0004_chemical_fabian_cortez",
+      "breakpoints": true
     }
   ]
 }

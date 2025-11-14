@@ -36,3 +36,35 @@ export const ideas = pgTable("ideas", {
   content: text("content").notNull(),             // texte saisi par l'utilisateur
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+/** ✅ Positions crypto saisies par l’utilisateur */
+export const cryptoPositions = pgTable("crypto_positions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),
+
+  // Identité de la crypto
+  symbol: text("symbol").notNull(),      // ex: "BTC"
+  name: text("name"),                    // ex: "Bitcoin" (optionnel)
+  logoUrl: text("logo_url"),             // URL du logo (si tu veux stocker ce qu’on récupère d’une API)
+
+  // Détail de l’achat
+  quantity: numeric("quantity", { precision: 30, scale: 10 }).notNull(),      // ex: 0.123456789
+  buyPriceUnit: numeric("buy_price_unit", { precision: 18, scale: 8 }).notNull(), // prix unitaire dans la devise d’achat
+  buyTotal: numeric("buy_total", { precision: 18, scale: 8 }).notNull(),      // montant total payé
+  buyCurrency: text("buy_currency").notNull(),                                // ex: "EUR"
+  buyDate: date("buy_date").notNull(),
+
+  notes: text("notes"),
+
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/** ✅ Prix journaliers / snapshots pour les cryptos */
+export const cryptoPrices = pgTable("crypto_prices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  symbol: text("symbol").notNull(),                  // ex: "BTC"
+  currency: text("currency").notNull(),              // ex: "EUR"
+  price: numeric("price", { precision: 30, scale: 10 }).notNull(), // prix actuel
+  asOf: timestamp("as_of").defaultNow().notNull(),   // timestamp du prix
+});
