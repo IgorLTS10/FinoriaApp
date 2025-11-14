@@ -397,11 +397,11 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const searchTimeoutRef = useRef<number | null>(null);
+  const symbolInputRef = useRef<HTMLInputElement | null>(null); // 👈 nouveau
 
   function handleSymbolChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setSymbol(value.toUpperCase());
-    setShowSuggestions(true);
     setSearchError(null);
     setLogoUrl(undefined);
 
@@ -411,8 +411,12 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
 
     if (!value.trim()) {
       setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
+
+    // On va rouvrir la liste parce qu'on tape
+    setShowSuggestions(true);
 
     // Debounce
     searchTimeoutRef.current = window.setTimeout(async () => {
@@ -437,8 +441,14 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
     setSymbol(s.symbol.toUpperCase());
     setName(s.name);
     setLogoUrl(s.logoUrl);
-    setShowSuggestions(false);
     setSuggestions([]);
+    setSearchError(null);
+    setShowSuggestions(false);
+
+    // 👇 On enlève le focus du champ pour éviter la réouverture
+    if (symbolInputRef.current) {
+      symbolInputRef.current.blur();
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -489,11 +499,16 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
               Crypto (symbole)
               <div className={styles.symbolWrapper}>
                 <input
+                 ref={symbolInputRef}
                   className={styles.modalInput}
                   placeholder="BTC, ETH, SOL..."
                   value={symbol}
                   onChange={handleSymbolChange}
-                  onFocus={() => symbol && setShowSuggestions(true)}
+                  onFocus={() => {
+                    if (suggestions.length > 0) {
+                      setShowSuggestions(true);
+                    }
+                  }}
                 />
                 {showSuggestions && (
                   <div className={styles.symbolSuggestions}>
@@ -526,15 +541,15 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
                           </div>
                         </div>
                       ))}
-                    {!searchLoading &&
-                      !searchError &&
-                      suggestions.length === 0 &&
-                      symbol.trim() && (
-                        <div className={styles.suggestionEmpty}>
-                          Aucune crypto trouvée pour &quot;{symbol}&quot;
-                        </div>
-                      )}
-                  </div>
+                        {!searchLoading &&
+                        !searchError &&
+                        suggestions.length === 0 &&
+                        symbol.trim() && (
+                            <div className={styles.suggestionEmpty}>
+                            Aucune crypto trouvée pour &quot;{symbol}&quot;
+                            </div>
+                        )}
+                    </div>
                 )}
               </div>
             </label>
