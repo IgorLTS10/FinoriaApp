@@ -1,3 +1,4 @@
+// api/crypto/prices.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
@@ -11,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql as rawSql, and, desc, eq } from "drizzle-orm";
 
+// ---- DB client ----
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
@@ -22,6 +24,7 @@ if (!connectionString) {
 const sql = neon(connectionString);
 const db = drizzle(sql);
 
+// ---- Tables ----
 const cryptoPositions = pgTable("crypto_positions", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
@@ -46,7 +49,7 @@ const cryptoPrices = pgTable("crypto_prices", {
   asOf: timestamp("as_of").defaultNow().notNull(),
 });
 
-// Mapping symbole → id provider
+// Mapping symbole → id provider (à enrichir)
 const SYMBOL_TO_PROVIDER_ID: Record<string, string> = {
   BTC: "bitcoin",
   ETH: "ethereum",
@@ -63,20 +66,32 @@ const PROVIDER_MARKETS_URL = "https://api.coingecko.com/api/v3/coins/markets";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    // =====================================================
+    // GET : retourne les derniers prix
+    // - si ?symbols=BTC,ETH → ces symboles
+    // - sinon → tous les symboles distincts en base
+    // =====================================================
     if (req.method === "GET") {
-      // LIST des derniers prix pour une liste de symboles
+      const currency = ((req.query.currency as string) || "EUR").toUpperCase();
       const symbolsParam = (req.query.symbols as string | undefined) || "";
-      const currency = ((req.query.currency as string | undefined) || "EUR").toUpperCase();
 
-      const symbols = symbolsParam
-        .split(",")
-        .map((s) => s.trim().toUpperCase())
-        .filter(Boolean);
+      let symbols: string[] = [];
+
+      if (symbolsParam.trim()) {
+        symbols = symbolsParam
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean);
+      } else {
+        // Pas de paramètre → on regarde toutes les cryptos existantes
+        const distinct = await db.execute(
+          rawSql`SELECT DISTINCT UPPER(symbol) as symbol FROM crypto_positions`
+        );
+        symbols = (distinct.rows as any[]).map((r) => r.symbol as string);
+      }
 
       if (symbols.length === 0) {
-        return res.status(400).json({
-          error: "Paramètre symbols obligatoire, ex: ?symbols=BTC,ETH,SOL",
-        });
+        return res.status(200).json({ prices: {} });
       }
 
       const pricesBySymbol: Record<
@@ -84,11 +99,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { price: number; currency: string; asOf: string }
       > = {};
 
+      // On prend le dernier enregistrement pour chaque symbole
       for (const symbol of symbols) {
         const rows = await db
           .select()
           .from(cryptoPrices)
-          .where(and(eq(cryptoPrices.symbol, symbol), eq(cryptoPrices.currency, currency)))
+          .where(
+            and(
+              eq(cryptoPrices.symbol, symbol),
+              eq(cryptoPrices.currency, currency)
+            )
+          )
           .orderBy(desc(cryptoPrices.asOf))
           .limit(1);
 
@@ -105,8 +126,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ prices: pricesBySymbol });
     }
 
+    // =====================================================
+    // POST : REFRESH des prix (appelé par GitHub Actions)
+    // - récupère symboles distincts depuis crypto_positions
+    // - appelle l'API provider
+    // - insère dans crypto_prices
+    // - met à jour name + logoUrl dans crypto_positions
+    // =====================================================
     if (req.method === "POST") {
-      // REFRESH (appelé par cron ou bouton)
+      // 1) symboles distincts
       const distinctSymbols = await db.execute(
         rawSql`SELECT DISTINCT UPPER(symbol) as symbol FROM crypto_positions`
       );
@@ -122,6 +150,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
+      // 2) mapping → ids provider
       const mapped: { symbol: string; providerId: string }[] = [];
       for (const symbol of symbols) {
         const providerId = SYMBOL_TO_PROVIDER_ID[symbol];
@@ -141,6 +170,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const idsParam = mapped.map((m) => m.providerId).join(",");
       const vsCurrency = "eur";
 
+      // 3) Appel CoinGecko (ou autre)
       const url = `${PROVIDER_MARKETS_URL}?vs_currency=${encodeURIComponent(
         vsCurrency
       )}&ids=${encodeURIComponent(
@@ -174,8 +204,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       for (const m of mapped) {
         const market = data.find((d) => d.id === m.providerId);
-        if (!market || !market.current_price || !Number.isFinite(market.current_price)) continue;
+        if (
+          !market ||
+          !market.current_price ||
+          !Number.isFinite(market.current_price)
+        )
+          continue;
 
+        // Insert prix
         valuesToInsert.push({
           symbol: m.symbol,
           currency: vsCurrency.toUpperCase(),
@@ -183,6 +219,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           asOf: now,
         });
 
+        // Update metadata (name + logo)
         await db
           .update(cryptoPositions)
           .set({
@@ -210,6 +247,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    // Méthodes non prises en charge
     return res
       .status(405)
       .json({ error: `Method ${req.method} not allowed, use GET/POST` });
