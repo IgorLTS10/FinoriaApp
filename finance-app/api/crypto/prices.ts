@@ -49,20 +49,26 @@ const cryptoPrices = pgTable("crypto_prices", {
   asOf: timestamp("as_of").defaultNow().notNull(),
 });
 
-// Mapping symbole → id provider (à enrichir)
-const SYMBOL_TO_PROVIDER_ID: Record<string, string> = {
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  SOL: "solana",
-  ADA: "cardano",
-  BNB: "binancecoin",
-  XRP: "ripple",
-  MATIC: "matic-network",
-  AVAX: "avalanche-2",
-  DOGE: "dogecoin",
+// ---- CoinGecko endpoints ----
+const PROVIDER_MARKETS_URL =
+  "https://api.coingecko.com/api/v3/coins/markets";
+const PROVIDER_SEARCH_URL =
+  "https://api.coingecko.com/api/v3/search";
+
+type CoinSearchItem = {
+  id: string;
+  name: string;
+  symbol: string;
+  thumb: string;
 };
 
-const PROVIDER_MARKETS_URL = "https://api.coingecko.com/api/v3/coins/markets";
+type MarketItem = {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -99,7 +105,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { price: number; currency: string; asOf: string }
       > = {};
 
-      // On prend le dernier enregistrement pour chaque symbole
       for (const symbol of symbols) {
         const rows = await db
           .select()
@@ -129,8 +134,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // =====================================================
     // POST : REFRESH des prix (appelé par GitHub Actions)
     // - récupère symboles distincts depuis crypto_positions
-    // - appelle l'API provider
-    // - insère dans crypto_prices
+    // - pour chaque symbole → devine l'id CoinGecko via /search
+    // - appelle /coins/markets avec tous les ids
+    // - supprime les anciens prix pour ces symboles
+    // - insère les nouveaux
     // - met à jour name + logoUrl dans crypto_positions
     // =====================================================
     if (req.method === "POST") {
@@ -150,27 +157,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
-      // 2) mapping → ids provider
+      // 2) Pour chaque symbole, on va chercher l'id CoinGecko
       const mapped: { symbol: string; providerId: string }[] = [];
+      const unmapped: string[] = [];
+
       for (const symbol of symbols) {
-        const providerId = SYMBOL_TO_PROVIDER_ID[symbol];
-        if (providerId) {
-          mapped.push({ symbol, providerId });
+        const searchUrl = `${PROVIDER_SEARCH_URL}?query=${encodeURIComponent(
+          symbol
+        )}`;
+        const searchRes = await fetch(searchUrl);
+
+        if (!searchRes.ok) {
+          console.warn(
+            `Search API error for ${symbol}: ${searchRes.status} ${searchRes.statusText}`
+          );
+          unmapped.push(symbol);
+          continue;
         }
+
+        const json = (await searchRes.json()) as { coins: CoinSearchItem[] };
+        const coins = json.coins || [];
+        if (coins.length === 0) {
+          unmapped.push(symbol);
+          continue;
+        }
+
+        const lowerSymbol = symbol.toLowerCase();
+        let best = coins.find(
+          (c) => c.symbol.toLowerCase() === lowerSymbol
+        );
+        if (!best) {
+          best = coins[0]; // fallback : premier résultat
+        }
+
+        if (!best) {
+          unmapped.push(symbol);
+          continue;
+        }
+
+        mapped.push({ symbol, providerId: best.id });
       }
 
       if (mapped.length === 0) {
         return res.status(200).json({
           success: true,
           message:
-            "Aucun symbole n'a de mapping vers un provider. Complète SYMBOL_TO_PROVIDER_ID.",
+            "Aucun symbole n'a pu être mappé automatiquement. Vérifie les symboles en base.",
+          unmapped,
         });
       }
 
       const idsParam = mapped.map((m) => m.providerId).join(",");
       const vsCurrency = "eur";
 
-      // 3) Appel CoinGecko (ou autre)
+      // 3) Appel CoinGecko /coins/markets pour tous les ids
       const url = `${PROVIDER_MARKETS_URL}?vs_currency=${encodeURIComponent(
         vsCurrency
       )}&ids=${encodeURIComponent(
@@ -184,14 +224,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         );
       }
 
-      type MarketItem = {
-        id: string;
-        symbol: string;
-        name: string;
-        image: string;
-        current_price: number;
-      };
-
       const data = (await priceRes.json()) as MarketItem[];
       const now = new Date();
 
@@ -202,16 +234,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         asOf: Date;
       }[] = [];
 
+      // 4) Construire les valeurs + préparer les updates de metadata
       for (const m of mapped) {
         const market = data.find((d) => d.id === m.providerId);
         if (
           !market ||
           !market.current_price ||
           !Number.isFinite(market.current_price)
-        )
+        ) {
           continue;
+        }
 
-        // Insert prix
         valuesToInsert.push({
           symbol: m.symbol,
           currency: vsCurrency.toUpperCase(),
@@ -219,7 +252,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           asOf: now,
         });
 
-        // Update metadata (name + logo)
+        // Update name + logoUrl sur crypto_positions
         await db
           .update(cryptoPositions)
           .set({
@@ -235,15 +268,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           success: true,
           message:
             "Aucun prix valide reçu du provider pour les symboles demandés.",
+          unmapped,
         });
       }
 
+      // 5) Éviter les doublons : on supprime les anciens prix pour ces symboles / currency
+      const affectedSymbols = Array.from(
+        new Set(valuesToInsert.map((v) => v.symbol))
+      );
+
+      for (const sym of affectedSymbols) {
+        await db
+          .delete(cryptoPrices)
+          .where(
+            and(
+              eq(cryptoPrices.symbol, sym),
+              eq(cryptoPrices.currency, vsCurrency.toUpperCase())
+            )
+          );
+      }
+
+      // 6) On insère les nouveaux prix
       await db.insert(cryptoPrices).values(valuesToInsert);
 
       return res.status(200).json({
         success: true,
         inserted: valuesToInsert.length,
         symbols: valuesToInsert.map((v) => v.symbol),
+        unmapped,
       });
     }
 
