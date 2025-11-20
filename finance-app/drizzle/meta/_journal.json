@@ -43,6 +43,13 @@
       "when": 1763653499247,
       "tag": "0005_amazing_iron_monger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763660470701,
+      "tag": "0006_military_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }

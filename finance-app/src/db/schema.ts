@@ -76,3 +76,33 @@ export const metalPricesHistory = pgTable("metal_prices_history", {
   pricePerGramEur: numeric("price_per_gram_eur", { precision: 30, scale: 10 }).notNull(),
   asOf: timestamp("as_of").defaultNow().notNull(),
 });
+
+
+export const stockPositions = pgTable("stock_positions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),
+
+  symbol: text("symbol").notNull(),    // ex: AAPL
+  name: text("name"),                  // ex: Apple Inc.
+  exchange: text("exchange"),          // ex: NASDAQ
+  logoUrl: text("logo_url"),           // Clearbit
+
+  quantity: numeric("quantity", { precision: 20, scale: 8 }).notNull(),
+  buyPrice: numeric("buy_price", { precision: 20, scale: 8 }).notNull(), // prix unitaire
+  buyTotal: numeric("buy_total", { precision: 20, scale: 8 }).notNull(), // quantité * prix unitaire
+  buyCurrency: text("buy_currency").notNull(), // USD/EUR etc.
+  buyDate: date("buy_date").notNull(),
+
+  notes: text("notes"),
+
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const stockPrices = pgTable("stock_prices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  symbol: text("symbol").notNull(),
+  price: numeric("price", { precision: 20, scale: 8 }).notNull(),
+  currency: text("currency").notNull(), // USD
+  asOf: timestamp("as_of").defaultNow().notNull(),
+});

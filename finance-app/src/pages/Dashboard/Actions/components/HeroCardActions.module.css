@@ -1,0 +1,51 @@
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 28px;
+  border-radius: 18px;
+
+  background: linear-gradient(
+      135deg,
+      rgba(45, 212, 191, 0.12),
+      rgba(59, 130, 246, 0.12)
+    ),
+    rgba(15, 23, 42, 0.85);
+
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+
+  backdrop-filter: blur(18px);
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  color: rgba(209, 213, 219, 0.8);
+}
+
+.value {
+  font-size: 34px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.delta {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.spark {
+  font-size: 42px;
+  opacity: 0.55;
+}
