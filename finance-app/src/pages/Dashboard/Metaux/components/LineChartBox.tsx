@@ -13,6 +13,7 @@ import {
 import { useFx } from "../hooks/useFx";
 import { useUser } from "@stackframe/react";
 import { useMetaux } from "../hooks/useMetaux";
+import { usePortfolioHistory } from "../hooks/usePortfolioHistory";
 
 // map metal type → code métal (FX)
 const TYPE_TO_METAL_CODE: Record<
@@ -40,8 +41,8 @@ export default function LineChartBox() {
   const user = useUser();
   const userId = user?.id;
   const { rows } = useMetaux(userId);
+  const { history } = usePortfolioHistory(userId);
 
-  // Si aucune donnée → placeholder
   if (!rows || rows.length === 0) {
     return (
       <div className={styles.box}>
@@ -51,8 +52,8 @@ export default function LineChartBox() {
     );
   }
 
-  // 1. Grouper par date d'achat
-  const byDate: Record<
+  // 1) Montants investis + valeur actuelle "as-if" par date d'achat
+  const investDeltaByDate: Record<
     string,
     { invested: number; current: number }
   > = {};
@@ -60,38 +61,55 @@ export default function LineChartBox() {
   for (const r of rows) {
     const dateKey = r.dateAchat.slice(0, 10);
 
-    // montant investi ce jour-là
     const investedValue = convertForDisplay(r.prixAchat, r.deviseAchat);
 
-    // valeur réelle spot
     const metalCode = TYPE_TO_METAL_CODE[r.type];
     const pricePerOunce = convert(1, metalCode, displayCurrency);
     const pricePerGram = pricePerOunce / 31.1035;
     const weightG = normalizeWeightToGrams(r.poids, r.unite);
     const currentValue = weightG * pricePerGram;
 
-    if (!byDate[dateKey]) {
-      byDate[dateKey] = { invested: 0, current: 0 };
+    if (!investDeltaByDate[dateKey]) {
+      investDeltaByDate[dateKey] = { invested: 0, current: 0 };
     }
 
-    byDate[dateKey].invested += investedValue;
-    byDate[dateKey].current += currentValue;
+    investDeltaByDate[dateKey].invested += investedValue;
+    investDeltaByDate[dateKey].current += currentValue;
   }
 
-  // 2. Générer la timeline cumulée
-  const sortedDates = Object.keys(byDate).sort();
+  // 2) Série historique (valeur réelle par jour en EUR → convertie en displayCurrency)
+  const historyByDate: Record<string, number> = {};
+  for (const h of history) {
+    const dateKey = h.date; // YYYY-MM-DD
+    const valueDisplay = convert(h.valueEur, "EUR", displayCurrency);
+    historyByDate[dateKey] = valueDisplay;
+  }
 
+  // 3) Union de toutes les dates (achats + historique)
+  const allDatesSet = new Set<string>([
+    ...Object.keys(investDeltaByDate),
+    ...Object.keys(historyByDate),
+  ]);
+  const allDates = Array.from(allDatesSet).sort();
+
+  // 4) Construire les séries cumulées
   let cumInvested = 0;
   let cumCurrent = 0;
 
-  const data = sortedDates.map((d) => {
-    cumInvested += byDate[d].invested;
-    cumCurrent += byDate[d].current;
+  const data = allDates.map((d) => {
+    const delta = investDeltaByDate[d];
+    if (delta) {
+      cumInvested += delta.invested;
+      cumCurrent += delta.current;
+    }
+
+    const historyValue = historyByDate[d] ?? null;
 
     return {
       name: formatDateLabel(d),
       invested: Math.round(cumInvested),
       current: Math.round(cumCurrent),
+      history: historyValue !== null ? Math.round(historyValue) : null,
     };
   });
 
@@ -112,22 +130,32 @@ export default function LineChartBox() {
           <Tooltip />
           <Legend />
 
-          {/* Ligne investissement */}
+          {/* Ligne investissement cumulé */}
           <Line
             type="monotone"
             dataKey="invested"
-            name="Investi"
-            stroke="#38bdf8" // bleu
+            name="Investi (cumulé)"
+            stroke="#38bdf8"
             strokeWidth={3}
           />
 
-          {/* Ligne valeur réelle */}
+          {/* Ligne valeur actuelle "as-if" (revalorisée au spot d'aujourd'hui) */}
           <Line
             type="monotone"
             dataKey="current"
-            name="Valeur réelle"
-            stroke="#10b981" // vert
+            name="Valeur actuelle (spot du jour)"
+            stroke="#10b981"
             strokeWidth={3}
+          />
+
+          {/* Ligne valeur historique réelle (avec prix des jours passés) */}
+          <Line
+            type="monotone"
+            dataKey="history"
+            name="Valeur historique (jour par jour)"
+            stroke="#f97316"
+            strokeWidth={3}
+            dot={false}
           />
         </LineChart>
       </ResponsiveContainer>
