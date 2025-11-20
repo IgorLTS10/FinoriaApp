@@ -1,10 +1,9 @@
 // src/pages/Dashboard/Metaux/hooks/useFx.ts
-import { useEffect, useState } from "react";
 import { useCurrency } from "./useCurrency";
+import { useEffect, useState } from "react";
 
 type Rates = Record<string, number>;
 
-// on considère que les valeurs sources sont en EUR
 const BASE = "EUR";
 
 // Taux par défaut (fallback) si l'API n'a pas encore répondu
@@ -14,11 +13,16 @@ const DEFAULT_RATES_FROM_EUR: Rates = {
   PLN: 4.25,
   GBP: 0.86,
   CHF: 0.95,
+
+  // Métaux : valeurs approximatives juste pour ne pas avoir 0 si l'API n'a pas encore tourné
+  XAU: 0.00028, // 1 EUR ≈ 0.00028 XAU (juste un ordre de grandeur)
+  XAG: 0.02,    // 1 EUR ≈ 0.02 XAG
+  XPT: 0.0009,
+  XPD: 0.0007,
 };
 
 export function useFx() {
-  const { currency: displayCurrency } = useCurrency(); // devise d'affichage
-
+  const { currency: displayCurrency } = useCurrency();
   const [ratesFromEur, setRatesFromEur] =
     useState<Rates>(DEFAULT_RATES_FROM_EUR);
   const [fxReady, setFxReady] = useState(false);
@@ -31,8 +35,7 @@ export function useFx() {
       try {
         setFxError(null);
 
-        // On demande à l'API les mêmes devises que nos defaults
-        const quotes = Object.keys(DEFAULT_RATES_FROM_EUR).join(",");
+        const quotes = Object.keys(DEFAULT_RATES_FROM_EUR).join(","); // EUR,USD,PLN,GBP,CHF,XAU,XAG,XPT,XPD
         const res = await fetch(`/api/fx?base=${BASE}&quotes=${quotes}`);
 
         if (!res.ok) {
@@ -41,14 +44,16 @@ export function useFx() {
 
         const json = await res.json();
         const apiRates = json.rates as
-          | Record<string, { rate: number; base: string; quote: string; asOf: string }>
+          | Record<
+              string,
+              { rate: number; base: string; quote: string; asOf: string }
+            >
           | undefined;
 
         if (!apiRates) {
           throw new Error("Réponse FX invalide");
         }
 
-        // On part des defaults et on écrase avec les valeurs venant de l'API
         const next: Rates = { ...DEFAULT_RATES_FROM_EUR };
 
         for (const [quote, data] of Object.entries(apiRates)) {
@@ -66,7 +71,7 @@ export function useFx() {
         console.error("useFx loadFx error:", err);
         if (!ignore) {
           setFxError(err?.message || "Erreur inconnue lors du chargement FX");
-          setFxReady(true); // on passe quand même à true mais avec les defaults
+          setFxReady(true); // on continue avec les valeurs par défaut
         }
       }
     }
@@ -80,28 +85,29 @@ export function useFx() {
 
   function convert(amount: number, from: string, to: string): number {
     if (!Number.isFinite(amount)) return 0;
+
     const fromCode = from.toUpperCase();
     const toCode = to.toUpperCase();
 
     if (fromCode === toCode) return amount;
 
-    // Cas simples : EUR -> X ou X -> EUR
+    // 1 EUR = rate * toCode
     if (fromCode === BASE && ratesFromEur[toCode]) {
       return amount * ratesFromEur[toCode];
     }
 
+    // fromCode -> EUR
     if (toCode === BASE && ratesFromEur[fromCode]) {
-      // on a stocké "1 EUR = rate * X", donc "1 X = 1/rate EUR"
+      // si 1 EUR = r * fromCode, alors 1 fromCode = 1/r EUR
       return amount / ratesFromEur[fromCode];
     }
 
-    // Conversion croisée: from -> EUR -> to
+    // from -> EUR -> to
     if (ratesFromEur[fromCode] && ratesFromEur[toCode]) {
-      const inBase = amount / ratesFromEur[fromCode]; // from -> EUR
-      return inBase * ratesFromEur[toCode]; // EUR -> to
+      const inBase = amount / ratesFromEur[fromCode];
+      return inBase * ratesFromEur[toCode];
     }
 
-    // fallback : pas de taux connu → on renvoie tel quel
     return amount;
   }
 
@@ -113,7 +119,7 @@ export function useFx() {
     displayCurrency,
     convert,
     convertForDisplay,
-    fxReady,  // si tu veux afficher un skeleton plus tard
-    fxError,  // si tu veux afficher un message d’erreur discret
+    fxReady,
+    fxError,
   };
 }
