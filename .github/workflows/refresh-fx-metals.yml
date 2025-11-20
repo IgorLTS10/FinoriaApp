@@ -1,0 +1,17 @@
+# .github/workflows/refresh-fx-metals.yml
+name: Refresh FX & Metals
+
+on:
+  schedule:
+    - cron: "45 2 * * *"   # tous les jours à 02:45 UTC
+  workflow_dispatch: {}
+
+jobs:
+  call-vercel-fx-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Finoria FX + Metals refresh
+        run: |
+          curl -X POST \
+            -H "Content-Length: 0" \
+            https://finoria-app.vercel.app/api/fx
