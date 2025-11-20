@@ -8,18 +8,26 @@ import {
   Tooltip,
   YAxis,
   CartesianGrid,
+  Legend,
 } from "recharts";
 import { useFx } from "../hooks/useFx";
 import { useUser } from "@stackframe/react";
 import { useMetaux } from "../hooks/useMetaux";
 
-const baseData = [
-  { name: "Jan", value: 9000 },
-  { name: "Fév", value: 10050 },
-  { name: "Mar", value: 11200 },
-  { name: "Avr", value: 11800 },
-  { name: "Mai", value: 12450 },
-];
+// map metal type → code métal (FX)
+const TYPE_TO_METAL_CODE: Record<
+  "or" | "argent" | "platine" | "palladium",
+  "XAU" | "XAG" | "XPT" | "XPD"
+> = {
+  or: "XAU",
+  argent: "XAG",
+  platine: "XPT",
+  palladium: "XPD",
+};
+
+function normalizeWeightToGrams(poids: number, unite: "g" | "oz") {
+  return unite === "oz" ? poids * 31.1035 : poids;
+}
 
 function formatDateLabel(isoDate: string) {
   const d = new Date(isoDate);
@@ -27,60 +35,65 @@ function formatDateLabel(isoDate: string) {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 }
 
-// 🔥 Tooltip custom
-function CustomTooltip(props: any) {
-  const { active, payload, label } = props;
-  const { displayCurrency } = useFx();
-
-  if (!active || !payload || !payload.length) return null;
-
-  const value = Number(payload[0].value ?? 0);
-
-  return (
-    <div className={styles.tooltip}>
-      {label && <div className={styles.tooltipLabel}>{label}</div>}
-      <div className={styles.tooltipValue}>
-        {value.toLocaleString("fr-FR", {
-          maximumFractionDigits: 0,
-        })}{" "}
-        {displayCurrency}
-      </div>
-    </div>
-  );
-}
-
 export default function LineChartBox() {
-  const { convertForDisplay } = useFx();
+  const { convertForDisplay, convert, displayCurrency } = useFx();
   const user = useUser();
   const userId = user?.id;
   const { rows } = useMetaux(userId);
 
-  let data = baseData.map((p) => ({
-    ...p,
-    value: convertForDisplay(p.value, "EUR"),
-  }));
+  // Si aucune donnée → placeholder
+  if (!rows || rows.length === 0) {
+    return (
+      <div className={styles.box}>
+        <h3 className={styles.title}>Évolution du portefeuille</h3>
+        <p style={{ opacity: 0.7 }}>Pas encore de données…</p>
+      </div>
+    );
+  }
 
-  // Si on a des achats, on calcule l'évolution cumulée réelle
-  if (rows && rows.length > 0) {
-    const byDate: Record<string, number> = {};
+  // 1. Grouper par date d'achat
+  const byDate: Record<
+    string,
+    { invested: number; current: number }
+  > = {};
 
-    for (const r of rows) {
-      const dateKey = r.dateAchat.slice(0, 10); // YYYY-MM-DD
-      const value = convertForDisplay(r.prixAchat, r.deviseAchat);
-      byDate[dateKey] = (byDate[dateKey] || 0) + value;
+  for (const r of rows) {
+    const dateKey = r.dateAchat.slice(0, 10);
+
+    // montant investi ce jour-là
+    const investedValue = convertForDisplay(r.prixAchat, r.deviseAchat);
+
+    // valeur réelle spot
+    const metalCode = TYPE_TO_METAL_CODE[r.type];
+    const pricePerOunce = convert(1, metalCode, displayCurrency);
+    const pricePerGram = pricePerOunce / 31.1035;
+    const weightG = normalizeWeightToGrams(r.poids, r.unite);
+    const currentValue = weightG * pricePerGram;
+
+    if (!byDate[dateKey]) {
+      byDate[dateKey] = { invested: 0, current: 0 };
     }
 
-    const sortedDates = Object.keys(byDate).sort();
-    let cumulative = 0;
-
-    data = sortedDates.map((d) => {
-      cumulative += byDate[d];
-      return {
-        name: formatDateLabel(d),
-        value: cumulative,
-      };
-    });
+    byDate[dateKey].invested += investedValue;
+    byDate[dateKey].current += currentValue;
   }
+
+  // 2. Générer la timeline cumulée
+  const sortedDates = Object.keys(byDate).sort();
+
+  let cumInvested = 0;
+  let cumCurrent = 0;
+
+  const data = sortedDates.map((d) => {
+    cumInvested += byDate[d].invested;
+    cumCurrent += byDate[d].current;
+
+    return {
+      name: formatDateLabel(d),
+      invested: Math.round(cumInvested),
+      current: Math.round(cumCurrent),
+    };
+  });
 
   return (
     <div className={styles.box}>
@@ -96,11 +109,24 @@ export default function LineChartBox() {
               Number(v).toLocaleString("fr-FR", { maximumFractionDigits: 0 })
             }
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip />
+          <Legend />
+
+          {/* Ligne investissement */}
           <Line
             type="monotone"
-            dataKey="value"
-            stroke="var(--accent2)"
+            dataKey="invested"
+            name="Investi"
+            stroke="#38bdf8" // bleu
+            strokeWidth={3}
+          />
+
+          {/* Ligne valeur réelle */}
+          <Line
+            type="monotone"
+            dataKey="current"
+            name="Valeur réelle"
+            stroke="#10b981" // vert
             strokeWidth={3}
           />
         </LineChart>

@@ -68,3 +68,11 @@ export const cryptoPrices = pgTable("crypto_prices", {
   price: numeric("price", { precision: 30, scale: 10 }).notNull(), // prix actuel
   asOf: timestamp("as_of").defaultNow().notNull(),   // timestamp du prix
 });
+
+export const metalPricesHistory = pgTable("metal_prices_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  metal: text("metal").notNull(), // XAU, XAG, XPT, XPD
+  pricePerOunceEur: numeric("price_per_ounce_eur", { precision: 30, scale: 10 }).notNull(),
+  pricePerGramEur: numeric("price_per_gram_eur", { precision: 30, scale: 10 }).notNull(),
+  asOf: timestamp("as_of").defaultNow().notNull(),
+});
