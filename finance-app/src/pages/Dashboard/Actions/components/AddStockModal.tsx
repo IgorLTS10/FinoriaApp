@@ -1,3 +1,4 @@
+// src/pages/Dashboard/Actions/components/AddStockModal.tsx
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -37,7 +38,6 @@ export default function AddStockModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // reset du formulaire à l'ouverture
   useEffect(() => {
     if (!open) return;
     setSymbol("");
@@ -47,7 +47,7 @@ export default function AddStockModal({
     setQuantity("");
     setBuyPrice("");
     setBuyCurrency("USD");
-    setBuyDate(new Date().toISOString().slice(0, 10)); // date du jour
+    setBuyDate(new Date().toISOString().slice(0, 10));
     setNotes("");
     setSearchQuery("");
     setError(null);
@@ -82,7 +82,7 @@ export default function AddStockModal({
         exchange: exchange || undefined,
         logoUrl: logoUrl || undefined,
         quantity: quantityNum,
-        buyPrice: buyPriceNum,
+        buyPrice: buyPriceNum,          // ✅ même nom que dans ton schéma
         buyCurrency,
         buyDate,
         notes: notes.trim() || undefined,
@@ -106,7 +106,6 @@ export default function AddStockModal({
     setName(r.name);
     setExchange(r.exchange);
     setLogoUrl(r.logoUrl || null);
-    // on vide la recherche pour masquer la dropdown
     setSearchQuery("");
   }
 
@@ -129,14 +128,13 @@ export default function AddStockModal({
             <div className={styles.header}>
               <h2>Ajouter une action</h2>
               <p>
-                Recherche une action par symbole ou nom, indique ta quantité et ton prix
-                d’achat. On calculera automatiquement la performance à partir des prix
-                spot quotidiens.
+                Recherche une action par symbole ou nom, indique ta quantité et ton
+                prix d’achat. On calculera automatiquement la performance à partir
+                des prix spot quotidiens.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className={styles.form}>
-              {/* Ligne symbole + nom */}
               <div className={styles.row}>
                 <div className={styles.field}>
                   <label>Symbole</label>
@@ -152,7 +150,6 @@ export default function AddStockModal({
                       placeholder="Ex. AAPL, TSLA..."
                       className={styles.input}
                     />
-                    {/* Dropdown de recherche */}
                     {searchQuery.trim().length > 0 && (
                       <div className={styles.searchDropdown}>
                         {searchLoading && (
@@ -212,7 +209,6 @@ export default function AddStockModal({
                 </div>
               </div>
 
-              {/* Ligne quantité / prix / devise */}
               <div className={styles.row}>
                 <div className={styles.field}>
                   <label>Quantité</label>
@@ -256,7 +252,6 @@ export default function AddStockModal({
                 </div>
               </div>
 
-              {/* Date d'achat */}
               <div className={styles.row}>
                 <div className={styles.field}>
                   <label>Date d’achat</label>
@@ -279,7 +274,6 @@ export default function AddStockModal({
                 </div>
               </div>
 
-              {/* Notes */}
               <div className={styles.field}>
                 <label>Notes (optionnel)</label>
                 <textarea

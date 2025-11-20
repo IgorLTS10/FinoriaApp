@@ -1,3 +1,4 @@
+// src/pages/Dashboard/Actions/hooks/useStockPositions.tsx
 import { useCallback, useEffect, useState } from "react";
 
 export type StockRow = {
@@ -7,31 +8,25 @@ export type StockRow = {
   name?: string | null;
   exchange?: string | null;
   logoUrl?: string | null;
-
   quantity: number;
-  buyPrice: number;
-  buyTotal: number;
+  buyPrice: number;      // prix unitaire
+  buyTotal: number;      // quantité * prix unitaire
   buyCurrency: string;
-  buyDate: string;
+  buyDate: string;       // ISO
   notes?: string | null;
-
-  createdAt: string;
-  updatedAt: string;
 };
 
 export type NewStockPayload = {
   userId: string;
-
   symbol: string;
-  name?: string | null;
-  exchange?: string | null;
-  logoUrl?: string | null;
-
+  name?: string;
+  exchange?: string;
+  logoUrl?: string;
   quantity: number;
-  buyPrice: number;
+  buyPrice: number;      // prix unitaire
   buyCurrency: string;
   buyDate: string;
-  notes?: string | null;
+  notes?: string;
 };
 
 export function useStockPositions(userId?: string) {
@@ -41,7 +36,6 @@ export function useStockPositions(userId?: string) {
 
   const refresh = useCallback(async () => {
     if (!userId) return;
-
     setLoading(true);
     setError(null);
 
@@ -49,7 +43,17 @@ export function useStockPositions(userId?: string) {
       const res = await fetch(`/api/stocks?userId=${userId}`);
       if (!res.ok) throw new Error("Erreur lors du chargement des actions");
       const json = await res.json();
-      setRows(json.data || []);
+
+      const data = (json.data || []) as any[];
+
+      const mapped: StockRow[] = data.map((r) => ({
+        ...r,
+        quantity: Number(r.quantity),
+        buyPrice: Number(r.buyPrice),
+        buyTotal: Number(r.buyTotal),
+      }));
+
+      setRows(mapped);
     } catch (err: any) {
       setError(err.message || "Erreur inconnue");
     } finally {
@@ -75,13 +79,25 @@ export function useStockPositions(userId?: string) {
       let json: any = null;
       try {
         json = text ? JSON.parse(text) : null;
-      } catch {}
-
-      if (!res.ok) {
-        throw new Error(json?.error || "Erreur lors de l’ajout de l’action");
+      } catch {
+        json = null;
       }
 
-      const row = json.row as StockRow;
+      if (!res.ok) {
+        const message =
+          json?.error ||
+          `Erreur HTTP ${res.status} : ${text?.slice(0, 120) || "Réponse vide"}`;
+        throw new Error(message);
+      }
+
+      const inserted = json.row as any;
+      const row: StockRow = {
+        ...inserted,
+        quantity: Number(inserted.quantity),
+        buyPrice: Number(inserted.buyPrice),
+        buyTotal: Number(inserted.buyTotal),
+      };
+
       setRows((prev) => [...prev, row]);
     },
     [userId]
@@ -101,12 +117,15 @@ export function useStockPositions(userId?: string) {
       let json: any = null;
       try {
         json = text ? JSON.parse(text) : null;
-      } catch {}
+      } catch {
+        json = null;
+      }
 
       if (!res.ok) {
-        throw new Error(
-          json?.error || "Erreur lors de la suppression de l’action"
-        );
+        const message =
+          json?.error ||
+          `Erreur HTTP ${res.status} : ${text?.slice(0, 120) || "Réponse vide"}`;
+        throw new Error(message);
       }
 
       setRows((prev) => prev.filter((r) => r.id !== id));
@@ -114,12 +133,5 @@ export function useStockPositions(userId?: string) {
     [userId]
   );
 
-  return {
-    rows,
-    loading,
-    error,
-    refresh,
-    addStock,
-    deleteStock,
-  };
+  return { rows, loading, error, refresh, addStock, deleteStock };
 }

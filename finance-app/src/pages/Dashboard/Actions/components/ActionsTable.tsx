@@ -1,7 +1,6 @@
+// src/pages/Dashboard/Actions/components/ActionsTable.tsx
 import styles from "./ActionsTable.module.css";
-import { motion } from "framer-motion";
-import { useFx } from "../../Metaux/hooks/useFx"
-
+import { useFx } from "../../Metaux/hooks/useFx";
 import type { StockRow } from "../hooks/useStockPositions";
 import type { StockPrice } from "../hooks/useStockPrices";
 
@@ -14,10 +13,17 @@ type ActionsTableProps = {
   onDelete: (id: string) => void;
 };
 
-export default function ActionsTable({ rows, prices, error, onAddClick, onDelete }: ActionsTableProps) {
-  const { convert, convertForDisplay, displayCurrency } = useFx();
+export default function ActionsTable({
+  rows,
+  prices,
+  loading,
+  error,
+  onAddClick,
+  onDelete,
+}: ActionsTableProps) {
+  const { displayCurrency, convert, convertForDisplay } = useFx();
 
-  const fmt = new Intl.NumberFormat("fr-FR", {
+  const formatter = new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: displayCurrency,
     maximumFractionDigits: 2,
@@ -46,43 +52,75 @@ export default function ActionsTable({ rows, prices, error, onAddClick, onDelete
               <th></th>
             </tr>
           </thead>
-
           <tbody>
-            {rows.map((r) => {
-              const priceSpot = prices[r.symbol]?.price ?? 0;
-              const currentValue = convert(priceSpot * Number(r.quantity), prices[r.symbol]?.currency || "USD", displayCurrency);
-              const invested = convertForDisplay(r.buyTotal, r.buyCurrency);
+            {loading && (
+              <tr>
+                <td colSpan={8}>Chargement...</td>
+              </tr>
+            )}
 
-              const pnl = currentValue - invested;
-              const pnlColor = pnl >= 0 ? "#10b981" : "#ef4444";
+            {!loading && rows.length === 0 && (
+              <tr>
+                <td colSpan={8}>Aucune position pour l’instant.</td>
+              </tr>
+            )}
 
-              return (
-                <motion.tr
-                  key={r.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  whileHover={{ scale: 1.01 }}
-                >
-                  <td>
-                    {r.logoUrl && <img src={r.logoUrl} className={styles.logo} />}
-                  </td>
-                  <td>{r.symbol}</td>
-                  <td>{r.name}</td>
-                  <td>{r.quantity}</td>
-                  <td>{fmt.format(invested)}</td>
-                  <td>{fmt.format(currentValue)}</td>
-                  <td style={{ color: pnlColor }}>{fmt.format(pnl)}</td>
-                  <td>
-                    <button
-                      className={styles.deleteButton}
-                      onClick={() => onDelete(r.id)}
+            {!loading &&
+              rows.map((r: StockRow) => {
+                const invested = convertForDisplay(r.buyTotal, r.buyCurrency);
+
+                const price = prices[r.symbol]?.price ?? 0;
+                const priceCurrency =
+                  prices[r.symbol]?.currency || r.buyCurrency;
+
+                const current = price
+                  ? convert(price * r.quantity, priceCurrency, displayCurrency)
+                  : 0;
+
+                const pnl = current - invested;
+
+                return (
+                  <tr key={r.id}>
+                    <td>
+                      {r.logoUrl && (
+                        <img
+                          src={r.logoUrl}
+                          alt={r.symbol}
+                          className={styles.logo}
+                        />
+                      )}
+                    </td>
+                    <td>{r.symbol}</td>
+                    <td>{r.name || "-"}</td>
+                    <td>{r.quantity.toFixed(8)}</td>
+                    <td>{formatter.format(invested)}</td>
+                    <td>{formatter.format(current)}</td>
+                    <td
+                      style={{ color: pnl >= 0 ? "#22c55e" : "#f97373" }}
                     >
-                      🗑
-                    </button>
-                  </td>
-                </motion.tr>
-              );
-            })}
+                      {formatter.format(pnl)}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className={styles.deleteButton}
+                        title="Supprimer cette position"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Supprimer définitivement cette position ?"
+                            )
+                          ) {
+                            onDelete(r.id);
+                          }
+                        }}
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

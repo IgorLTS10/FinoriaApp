@@ -1,5 +1,5 @@
+// src/pages/Dashboard/Actions/components/KpiCardsActions.tsx
 import styles from "./KpiCardsActions.module.css";
-import { motion } from "framer-motion";
 import { useFx } from "../../Metaux/hooks/useFx";
 import type { StockRow } from "../hooks/useStockPositions";
 import type { StockPrice } from "../hooks/useStockPrices";
@@ -10,44 +10,60 @@ type KpiProps = {
 };
 
 export default function KpiCardsActions({ rows, prices }: KpiProps) {
-  const { convert, convertForDisplay, displayCurrency } = useFx();
+  const { displayCurrency, convert, convertForDisplay } = useFx();
 
-  let totalInvested = 0;
-  let totalCurrent = 0;
-  let count = rows.length;
+  let invested = 0;
+  let current = 0;
 
   for (const r of rows) {
-    totalInvested += convertForDisplay(r.buyTotal, r.buyCurrency);
-    const priceSpot = prices[r.symbol]?.price ?? 0;
-    totalCurrent += convert(priceSpot * Number(r.quantity), prices[r.symbol]?.currency || "USD", displayCurrency);
+    invested += convertForDisplay(r.buyTotal, r.buyCurrency);
+
+    const p = prices[r.symbol];
+    if (p && Number.isFinite(p.price)) {
+      current += convert(p.price * r.quantity, p.currency, displayCurrency);
+    }
   }
 
-  const pnl = totalCurrent - totalInvested;
+  const pnl = current - invested;
 
-  const fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: displayCurrency });
+
+  const formatter = new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: displayCurrency,
+    maximumFractionDigits: 2,
+  });
 
   const items = [
-    { label: "Investi total", value: fmt.format(totalInvested), color: "#60a5fa" },
-    { label: "Valeur actuelle", value: fmt.format(totalCurrent), color: "#34d399" },
-    { label: "P&L global", value: fmt.format(pnl), color: pnl >= 0 ? "#10b981" : "#ef4444" },
-    { label: "Positions", value: count, color: "#fbbf24" },
+    {
+      label: "Investi total",
+      value: invested,
+    },
+    {
+      label: "Valeur actuelle",
+      value: current,
+    },
+    {
+      label: "P&L global",
+      value: pnl,
+    },
+    {
+      label: "Positions",
+      value: rows.length,
+      isCount: true,
+    },
   ];
 
   return (
     <div className={styles.grid}>
-      {items.map((item, i) => (
-        <motion.div
-          key={i}
-          className={styles.card}
-          style={{ borderColor: item.color }}
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className={styles.label}>{item.label}</div>
-          <div className={styles.value} style={{ color: item.color }}>
-            {item.value}
+      {items.map((it) => (
+        <div className={styles.card} key={it.label}>
+          <div className={styles.label}>{it.label}</div>
+          <div className={styles.value}>
+            {it.isCount
+              ? it.value
+              : formatter.format(typeof it.value === "number" ? it.value : 0)}
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );
