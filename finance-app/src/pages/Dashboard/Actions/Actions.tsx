@@ -2,7 +2,6 @@ import { useUser } from "@stackframe/react";
 import { useState, useMemo } from "react";
 import styles from "./Actions.module.css";
 
-import { CurrencyProvider } from "../Metaux/hooks/useCurrency"; // ✅ IMPORTANT
 import { useStockPositions } from "./hooks/useStockPositions";
 import { useStockPrices } from "./hooks/useStockPrices";
 
@@ -28,26 +27,22 @@ export default function Actions() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <CurrencyProvider>   {/* ⬅️ AJOUT ESSENTIEL */}
-
-      <div className={styles.page}>
-        <HeroCardActions rows={rows} prices={prices} />
-        <KpiCardsActions rows={rows} prices={prices} />
-        <ActionsTable
-          rows={rows}
-          prices={prices}
-          loading={loading}
-          error={error}
-          onAddClick={() => setModalOpen(true)}
-          onDelete={deleteStock}
-        />
-        <AddStockModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onSubmit={addStock}
-        />
-      </div>
-
-    </CurrencyProvider>
+    <div className={styles.page}>
+      <HeroCardActions rows={rows} prices={prices} />
+      <KpiCardsActions rows={rows} prices={prices} />
+      <ActionsTable
+        rows={rows}
+        prices={prices}
+        loading={loading}
+        error={error}
+        onAddClick={() => setModalOpen(true)}
+        onDelete={deleteStock}
+      />
+      <AddStockModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={addStock}
+      />
+    </div>
   );
 }

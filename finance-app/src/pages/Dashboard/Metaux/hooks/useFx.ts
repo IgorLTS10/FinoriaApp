@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Metaux/hooks/useFx.ts
-import { useCurrency } from "./useCurrency";
+import { usePreferences } from "../../../../state/PreferencesContext";
 import { useEffect, useState } from "react";
 
 type Rates = Record<string, number>;
@@ -22,7 +22,7 @@ const DEFAULT_RATES_FROM_EUR: Rates = {
 };
 
 export function useFx() {
-  const { currency: displayCurrency } = useCurrency();
+  const { currency: displayCurrency } = usePreferences();
   const [ratesFromEur, setRatesFromEur] =
     useState<Rates>(DEFAULT_RATES_FROM_EUR);
   const [fxReady, setFxReady] = useState(false);
@@ -45,9 +45,9 @@ export function useFx() {
         const json = await res.json();
         const apiRates = json.rates as
           | Record<
-              string,
-              { rate: number; base: string; quote: string; asOf: string }
-            >
+            string,
+            { rate: number; base: string; quote: string; asOf: string }
+          >
           | undefined;
 
         if (!apiRates) {

@@ -1,18 +1,19 @@
 // src/pages/Dashboard/Metaux/components/CurrencySelector.tsx
 import { useState } from "react";
 import styles from "./CurrencySelector.module.css";
-import { useCurrency } from "../hooks/useCurrency.tsx";
+import { usePreferences } from "../../../../state/PreferencesContext";
 
 type Props = {
   compact?: boolean;
 };
 
 export default function CurrencySelector({ compact }: Props) {
-  const { currency, setCurrency, AVAILABLE } = useCurrency();
+  const { currency, setCurrency } = usePreferences();
+  const AVAILABLE = ["EUR", "USD", "PLN"];
   const [open, setOpen] = useState(false);
 
   function handleSelect(c: string) {
-    setCurrency(c);
+    setCurrency(c as "EUR" | "USD" | "PLN");
     setOpen(false);
   }
 
@@ -38,9 +39,8 @@ export default function CurrencySelector({ compact }: Props) {
             <button
               key={c}
               type="button"
-              className={`${styles.option} ${
-                c === currency ? styles.optionActive : ""
-              }`}
+              className={`${styles.option} ${c === currency ? styles.optionActive : ""
+                }`}
               onMouseDown={(e) => {
                 // évite de déclencher le blur avant le click
                 e.preventDefault();

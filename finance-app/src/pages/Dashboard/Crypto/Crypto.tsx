@@ -5,6 +5,7 @@ import styles from "./Crypto.module.css";
 import { useCryptoPositions } from "./hooks/useCryptoPositions";
 import type { CryptoPositionRow, NewCryptoPayload } from "./hooks/useCryptoPositions";
 import { useCryptoPrices } from "./hooks/useCryptoPrices";
+import { usePreferences } from "../../../state/PreferencesContext";
 
 /** Vue agrégée par symbole pour les cartes */
 type AggregatedCrypto = {
@@ -68,6 +69,7 @@ function aggregateBySymbol(
 export default function Crypto() {
   const user = useUser();
   const userId = (user as any)?.id as string | undefined;
+  const { currency } = usePreferences();
 
   const { rows, loading, error, addPosition, deletePosition } = useCryptoPositions(userId);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -81,7 +83,7 @@ export default function Crypto() {
     pricesBySymbol,
     loading: loadingPrices,
     error: errorPrices,
-  } = useCryptoPrices(symbols, "EUR");
+  } = useCryptoPrices(symbols, currency);
 
   const aggregated = useMemo(
     () => aggregateBySymbol(rows, pricesBySymbol),
@@ -151,22 +153,21 @@ export default function Crypto() {
             {symbols.length === 0
               ? "Ajoute des positions pour voir la valeur de ton portefeuille."
               : loadingPrices
-              ? "Mise à jour des prix en cours..."
-              : "Prix basés sur la dernière mise à jour en base."}
+                ? "Mise à jour des prix en cours..."
+                : "Prix basés sur la dernière mise à jour en base."}
           </div>
         </div>
 
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>Performance globale</div>
           <div
-            className={`${styles.kpiValue} ${
-              totalPnlAbs > 0 ? styles.positive : totalPnlAbs < 0 ? styles.negative : ""
-            }`}
+            className={`${styles.kpiValue} ${totalPnlAbs > 0 ? styles.positive : totalPnlAbs < 0 ? styles.negative : ""
+              }`}
           >
             {totalCurrentValue
               ? `${totalPnlAbs >= 0 ? "+" : ""}${totalPnlAbs.toFixed(2)} € (${totalPnlPct.toFixed(
-                  2
-                )} %)`
+                2
+              )} %)`
               : "—"}
           </div>
         </div>
@@ -258,15 +259,15 @@ export default function Crypto() {
                         ? asset.pnlAbs > 0
                           ? styles.positive
                           : asset.pnlAbs < 0
-                          ? styles.negative
-                          : ""
+                            ? styles.negative
+                            : ""
                         : styles.muted
                     }
                   >
                     {asset.pnlAbs != null && asset.pnlPct != null
                       ? `${asset.pnlAbs >= 0 ? "+" : ""}${asset.pnlAbs.toFixed(
-                          2
-                        )} € (${asset.pnlPct.toFixed(1)} %)`
+                        2
+                      )} € (${asset.pnlPct.toFixed(1)} %)`
                       : "—"}
                   </span>
                 </div>
@@ -350,6 +351,7 @@ export default function Crypto() {
 
       {addModalOpen && (
         <AddCryptoModal
+          defaultCurrency={currency}
           onClose={() => setAddModalOpen(false)}
           onSubmit={async (payload) => {
             try {
@@ -372,6 +374,7 @@ export default function Crypto() {
 type AddCryptoModalProps = {
   onClose: () => void;
   onSubmit: (payload: NewCryptoPayload) => Promise<void> | void;
+  defaultCurrency?: string;
 };
 
 type CoinSuggestion = {
@@ -380,14 +383,14 @@ type CoinSuggestion = {
   logoUrl?: string;
 };
 
-function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
+function AddCryptoModal({ onClose, onSubmit, defaultCurrency = "EUR" }: AddCryptoModalProps) {
   const [symbol, setSymbol] = useState("");
   const [name, setName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState("");
   const [buyPriceUnit, setBuyPriceUnit] = useState("");
   const [buyTotal, setBuyTotal] = useState("");
-  const [buyCurrency, setBuyCurrency] = useState("EUR");
+  const [buyCurrency, setBuyCurrency] = useState(defaultCurrency);
   const [buyDate, setBuyDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -499,7 +502,7 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
               Crypto (symbole)
               <div className={styles.symbolWrapper}>
                 <input
-                 ref={symbolInputRef}
+                  ref={symbolInputRef}
                   className={styles.modalInput}
                   placeholder="BTC, ETH, SOL..."
                   value={symbol}
@@ -541,15 +544,15 @@ function AddCryptoModal({ onClose, onSubmit }: AddCryptoModalProps) {
                           </div>
                         </div>
                       ))}
-                        {!searchLoading &&
-                        !searchError &&
-                        suggestions.length === 0 &&
-                        symbol.trim() && (
-                            <div className={styles.suggestionEmpty}>
-                            Aucune crypto trouvée pour &quot;{symbol}&quot;
-                            </div>
-                        )}
-                    </div>
+                    {!searchLoading &&
+                      !searchError &&
+                      suggestions.length === 0 &&
+                      symbol.trim() && (
+                        <div className={styles.suggestionEmpty}>
+                          Aucune crypto trouvée pour &quot;{symbol}&quot;
+                        </div>
+                      )}
+                  </div>
                 )}
               </div>
             </label>

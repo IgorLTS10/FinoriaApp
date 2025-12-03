@@ -1,6 +1,5 @@
 // src/pages/Dashboard/Metaux/Metaux.tsx
 import styles from "./Metaux.module.css";
-import { CurrencyProvider } from "./hooks/useCurrency";
 import { useUser } from "@stackframe/react";
 
 import HeroCard from "./components/HeroCard";
@@ -20,40 +19,38 @@ export default function Metaux() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <CurrencyProvider>
-      <div className={styles.page}>
-        <HeroCard />
-        <KpiCards />
+    <div className={styles.page}>
+      <HeroCard />
+      <KpiCards />
 
-        <div className={styles.charts}>
-          <LineChartBox />
-          <PieChartBox />
-        </div>
-
-       <MetalsTable
-          rows={rows}
-          loading={loading}
-          error={error || undefined}
-          onAddClick={() => setModalOpen(true)}
-          onDelete={async (id) => {
-            try {
-              await deleteMetal(id);
-            } catch (err: any) {
-              console.error(err);
-              alert(err.message || "Erreur lors de la suppression");
-            }
-          }}
-        />
-
-        <AddMetalModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onSubmit={async (payload) => {
-            if (!userId) return;
-            await addMetal(payload);
-          }}
-        />
+      <div className={styles.charts}>
+        <LineChartBox />
+        <PieChartBox />
       </div>
-    </CurrencyProvider>
+
+      <MetalsTable
+        rows={rows}
+        loading={loading}
+        error={error || undefined}
+        onAddClick={() => setModalOpen(true)}
+        onDelete={async (id) => {
+          try {
+            await deleteMetal(id);
+          } catch (err: any) {
+            console.error(err);
+            alert(err.message || "Erreur lors de la suppression");
+          }
+        }}
+      />
+
+      <AddMetalModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={async (payload) => {
+          if (!userId) return;
+          await addMetal(payload);
+        }}
+      />
+    </div>
   );
 }

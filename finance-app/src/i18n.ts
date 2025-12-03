@@ -9,7 +9,7 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: "fr",
+  // lng: "fr", // Removed to allow dynamic setting via PreferencesContext
   fallbackLng: "en",
   interpolation: { escapeValue: false },
 });

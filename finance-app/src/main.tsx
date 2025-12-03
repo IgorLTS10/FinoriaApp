@@ -17,6 +17,8 @@ import Metaux from "./pages/Dashboard/Metaux/Metaux";
 import Roadmap from "./pages/Dashboard/Roadmap/Roadmap";
 import Crypto from "./pages/Dashboard/Crypto/Crypto"
 import Actions from "./pages/Dashboard/Actions/Actions"
+import Settings from "./pages/Dashboard/Settings/Settings";
+import { PreferencesProvider } from "./state/PreferencesContext";
 
 function QueryAuthController() {
   const { open, close } = useAuthModal();
@@ -67,8 +69,9 @@ function Root() {
           <Route index element={<div>Bienvenue sur votre dashboard</div>} />
           <Route path="metaux" element={<Metaux />} />
           <Route path="roadmap" element={<Roadmap />} />
-          <Route path="crypto" element={<Crypto/>} />
-          <Route path="actions" element={<Actions/>} />
+          <Route path="crypto" element={<Crypto />} />
+          <Route path="actions" element={<Actions />} />
+          <Route path="parametres" element={<Settings />} />
         </Route>
       </Routes>
 
@@ -83,7 +86,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <TooltipProviderWrapper>
         <AuthRootProvider>
-          <Root />
+          <PreferencesProvider>
+            <Root />
+          </PreferencesProvider>
         </AuthRootProvider>
       </TooltipProviderWrapper>
     </BrowserRouter>

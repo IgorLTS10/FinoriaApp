@@ -2,7 +2,6 @@
 import { useState } from "react";
 import styles from "./AddMetalModal.module.css";
 import type { NewMetalPayload } from "../hooks/useMetaux";
-import { useCurrency } from "../hooks/useCurrency";
 
 type Props = {
   open: boolean;
@@ -11,7 +10,8 @@ type Props = {
 };
 
 export default function AddMetalModal({ open, onClose, onSubmit }: Props) {
-  const { AVAILABLE } = useCurrency();
+  const AVAILABLE = ["EUR", "USD", "PLN"];
+
 
   const [type, setType] = useState<NewMetalPayload["type"]>("or");
   const [poids, setPoids] = useState("");
@@ -34,47 +34,47 @@ export default function AddMetalModal({ open, onClose, onSubmit }: Props) {
   }
 
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setError(null);
+    e.preventDefault();
+    setError(null);
 
-  const p = parseNumber(poids);
-  const pa = parseNumber(prixAchat);
+    const p = parseNumber(poids);
+    const pa = parseNumber(prixAchat);
 
-  if (p === null || pa === null || !dateAchat) {
-    let msg = "Merci de corriger les champs suivants : ";
-    const parts: string[] = [];
-    if (p === null) parts.push("poids");
-    if (pa === null) parts.push("prix total");
-    if (!dateAchat) parts.push("date d'achat");
-    msg += parts.join(", ");
-    setError(msg);
-    return;
+    if (p === null || pa === null || !dateAchat) {
+      let msg = "Merci de corriger les champs suivants : ";
+      const parts: string[] = [];
+      if (p === null) parts.push("poids");
+      if (pa === null) parts.push("prix total");
+      if (!dateAchat) parts.push("date d'achat");
+      msg += parts.join(", ");
+      setError(msg);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await onSubmit({
+        type,
+        poids: p,
+        unite,
+        prixAchat: pa,
+        deviseAchat,
+        dateAchat,
+        fournisseur: fournisseur || undefined,
+        notes: notes || undefined,
+      });
+      setSubmitting(false);
+      onClose();
+      setPoids("");
+      setPrixAchat("");
+      setDateAchat("");
+      setFournisseur("");
+      setNotes("");
+    } catch (err: any) {
+      setSubmitting(false);
+      setError(err.message || "Erreur lors de l'ajout");
+    }
   }
-
-  try {
-    setSubmitting(true);
-    await onSubmit({
-      type,
-      poids: p,
-      unite,
-      prixAchat: pa,
-      deviseAchat,
-      dateAchat,
-      fournisseur: fournisseur || undefined,
-      notes: notes || undefined,
-    });
-    setSubmitting(false);
-    onClose();
-    setPoids("");
-    setPrixAchat("");
-    setDateAchat("");
-    setFournisseur("");
-    setNotes("");
-  } catch (err: any) {
-    setSubmitting(false);
-    setError(err.message || "Erreur lors de l'ajout");
-  }
-}
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
