@@ -12,7 +12,7 @@ export default function Crowdfunding() {
     const user = useUser();
     const userId = (user as any)?.id as string | undefined;
 
-    const { projects, loading, error, addProject, addTransaction, updateProject, updateTransaction, deleteTransaction } = useCrowdfunding(userId);
+    const { projects, loading, error, addProject, addTransaction, updateProject, deleteTransaction } = useCrowdfunding(userId);
 
     const [addProjectOpen, setAddProjectOpen] = useState(false);
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
@@ -196,7 +196,6 @@ export default function Crowdfunding() {
                             project={detailsModal}
                             userId={userId}
                             onUpdateProject={updateProject}
-                            onUpdateTransaction={updateTransaction}
                             onDeleteTransaction={deleteTransaction}
                             onAddTransaction={() => {
                                 setTransactionModal({ open: true, projectId: detailsModal.id, projectName: detailsModal.name });

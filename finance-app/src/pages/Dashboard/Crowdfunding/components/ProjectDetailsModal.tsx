@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./ProjectDetailsModal.module.css";
-import type { CrowdfundingProject, Transaction } from "../hooks/useCrowdfunding";
+import type { CrowdfundingProject } from "../hooks/useCrowdfunding";
 
 type Props = {
     open: boolean;
@@ -8,7 +8,6 @@ type Props = {
     project: CrowdfundingProject;
     userId: string;
     onUpdateProject: (id: string, userId: string, updates: any) => Promise<void>;
-    onUpdateTransaction: (id: string, updates: any) => Promise<void>;
     onDeleteTransaction: (id: string) => Promise<void>;
     onAddTransaction: () => void;
 };
@@ -19,7 +18,6 @@ export default function ProjectDetailsModal({
     project,
     userId,
     onUpdateProject,
-    onUpdateTransaction,
     onDeleteTransaction,
     onAddTransaction,
 }: Props) {
@@ -32,7 +30,6 @@ export default function ProjectDetailsModal({
         startDate: project.startDate,
         durationMonths: project.durationMonths,
     });
-    const [editingTx, setEditingTx] = useState<string | null>(null);
 
     if (!open) return null;
 
