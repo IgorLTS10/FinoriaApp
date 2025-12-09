@@ -35,6 +35,7 @@ export default function Crowdfunding() {
     const [chartVisible, setChartVisible] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [chartPeriod, setChartPeriod] = useState<"month" | "quarter" | "year">("month");
     const itemsPerPage = 20;
 
     // Filtrer les projets selon la recherche
@@ -129,10 +130,34 @@ export default function Crowdfunding() {
             {/* Collapsible Chart */}
             {projects && projects.length > 0 && (
                 <div className={styles.chartSection}>
-                    <button onClick={() => setChartVisible(!chartVisible)} className={styles.chartToggle}>
-                        {chartVisible ? "▼" : "▶"} Graphique des dividendes
-                    </button>
-                    {chartVisible && <DividendsChart projects={projects} />}
+                    <div className={styles.chartHeader}>
+                        <button onClick={() => setChartVisible(!chartVisible)} className={styles.chartToggle}>
+                            {chartVisible ? "▼" : "▶"} Graphique des dividendes
+                        </button>
+                        {chartVisible && (
+                            <div className={styles.chartFilters}>
+                                <button
+                                    className={`${styles.filterBtn} ${chartPeriod === "month" ? styles.active : ""}`}
+                                    onClick={() => setChartPeriod("month")}
+                                >
+                                    Mois
+                                </button>
+                                <button
+                                    className={`${styles.filterBtn} ${chartPeriod === "quarter" ? styles.active : ""}`}
+                                    onClick={() => setChartPeriod("quarter")}
+                                >
+                                    Trimestre
+                                </button>
+                                <button
+                                    className={`${styles.filterBtn} ${chartPeriod === "year" ? styles.active : ""}`}
+                                    onClick={() => setChartPeriod("year")}
+                                >
+                                    Année
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {chartVisible && <DividendsChart projects={projects} period={chartPeriod} />}
                 </div>
             )}
 
@@ -203,6 +228,7 @@ export default function Crowdfunding() {
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
+                                        <th></th>
                                         <th>Nom</th>
                                         <th>Plateforme</th>
                                         <th>Investi</th>
@@ -224,8 +250,25 @@ export default function Crowdfunding() {
                                         const elapsed = now.getTime() - start.getTime();
                                         const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
 
+                                        // Vérifier si un dividende a été reçu ce mois
+                                        const currentMonth = now.getMonth();
+                                        const currentYear = now.getFullYear();
+                                        const hasDividendThisMonth = project.transactions.some((t) => {
+                                            if (t.type !== "dividend") return false;
+                                            const txDate = new Date(t.date);
+                                            return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+                                        });
+                                        const needsAlert = project.status === "active" && !hasDividendThisMonth;
+
                                         return (
                                             <tr key={project.id}>
+                                                <td>
+                                                    {needsAlert && (
+                                                        <span className={styles.tableAlertIcon} title="Aucun dividende reçu ce mois">
+                                                            ⚠️
+                                                        </span>
+                                                    )}
+                                                </td>
                                                 <td>{project.name}</td>
                                                 <td>
                                                     <span

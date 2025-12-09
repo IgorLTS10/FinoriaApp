@@ -4,6 +4,7 @@ import styles from "./DividendsChart.module.css";
 
 type Props = {
     projects: CrowdfundingProject[];
+    period: "month" | "quarter" | "year";
 };
 
 // Couleurs par plateforme
@@ -20,36 +21,64 @@ const getColorForPlatform = (platform: string): string => {
     return PLATFORM_COLORS[platform] || "#6b7280";
 };
 
-export default function DividendsChart({ projects }: Props) {
-    // Grouper les dividendes par mois et par plateforme
-    const dividendsByMonth: Record<string, Record<string, number>> = {};
+const getQuarter = (month: number): number => {
+    return Math.floor(month / 3) + 1;
+};
+
+const getPeriodKey = (date: Date, period: "month" | "quarter" | "year"): string => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    if (period === "year") {
+        return `${year}`;
+    } else if (period === "quarter") {
+        const quarter = getQuarter(month);
+        return `${year}-Q${quarter}`;
+    } else {
+        return `${year}-${String(month + 1).padStart(2, "0")}`;
+    }
+};
+
+const formatPeriodLabel = (periodKey: string, period: "month" | "quarter" | "year"): string => {
+    if (period === "year") {
+        return periodKey;
+    } else if (period === "quarter") {
+        return periodKey;
+    } else {
+        const date = new Date(periodKey + "-01");
+        return date.toLocaleDateString("fr-FR", { month: "short", year: "numeric" });
+    }
+};
+
+export default function DividendsChart({ projects, period }: Props) {
+    // Grouper les dividendes par période et par plateforme
+    const dividendsByPeriod: Record<string, Record<string, number>> = {};
 
     projects.forEach((project) => {
         project.transactions
             .filter((t) => t.type === "dividend")
             .forEach((tx) => {
                 const date = new Date(tx.date);
-                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+                const periodKey = getPeriodKey(date, period);
 
-                if (!dividendsByMonth[monthKey]) {
-                    dividendsByMonth[monthKey] = {};
+                if (!dividendsByPeriod[periodKey]) {
+                    dividendsByPeriod[periodKey] = {};
                 }
 
-                if (!dividendsByMonth[monthKey][project.platform]) {
-                    dividendsByMonth[monthKey][project.platform] = 0;
+                if (!dividendsByPeriod[periodKey][project.platform]) {
+                    dividendsByPeriod[periodKey][project.platform] = 0;
                 }
 
-                dividendsByMonth[monthKey][project.platform] += tx.amount;
+                dividendsByPeriod[periodKey][project.platform] += tx.amount;
             });
     });
 
     // Convertir en format pour Recharts
-    const chartData = Object.entries(dividendsByMonth)
+    const chartData = Object.entries(dividendsByPeriod)
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([month, platforms]) => {
-            const monthDate = new Date(month + "-01");
+        .map(([periodKey, platforms]) => {
             return {
-                month: monthDate.toLocaleDateString("fr-FR", { month: "short", year: "numeric" }),
+                period: formatPeriodLabel(periodKey, period),
                 ...platforms,
             };
         });
@@ -77,12 +106,12 @@ export default function DividendsChart({ projects }: Props) {
 
     return (
         <div className={styles.chartContainer}>
-            <h3 className={styles.title}>Dividendes par mois et plateforme</h3>
+            <h3 className={styles.title}>Dividendes par {period === "month" ? "mois" : period === "quarter" ? "trimestre" : "année"} et plateforme</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                     <XAxis
-                        dataKey="month"
+                        dataKey="period"
                         stroke="#a0a0a0"
                         style={{ fontSize: "0.85rem" }}
                     />
