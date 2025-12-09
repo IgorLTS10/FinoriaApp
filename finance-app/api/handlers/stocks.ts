@@ -154,21 +154,23 @@ export async function handleStockPricesRefresh(req: VercelRequest, res: VercelRe
             // Récupérer les prix depuis Yahoo Finance
             for (const symbol of symbols) {
                 try {
-                    const quote = await yahooFinance.quote(symbol);
+                    const quote = await yahooFinance.quote(symbol) as any;
 
                     if (quote && quote.regularMarketPrice) {
+                        const currency = quote.currency || "USD";
+
                         // Insérer le nouveau prix dans la base
                         await db.insert(stockPrices).values({
                             symbol: symbol,
                             price: quote.regularMarketPrice.toString(),
-                            currency: quote.currency || "USD",
+                            currency: currency,
                             asOf: new Date(),
                         });
 
                         results.push({
                             symbol,
                             price: quote.regularMarketPrice,
-                            currency: quote.currency || "USD",
+                            currency: currency,
                         });
                     } else {
                         errors.push({ symbol, error: "No price data" });
