@@ -8,6 +8,20 @@ import TransactionsModal from "./components/TransactionsModal";
 import ProjectDetailsModal from "./components/ProjectDetailsModal";
 import DividendsChart from "./components/DividendsChart";
 
+// Couleurs par plateforme (mêmes que le graphique)
+const PLATFORM_COLORS: Record<string, string> = {
+    "Bricks": "#3b82f6",
+    "Bienpreter": "#8b5cf6",
+    "Anaxago": "#10b981",
+    "Fundimmo": "#f59e0b",
+    "Homunity": "#ef4444",
+    "Raizers": "#ec4899",
+};
+
+const getPlatformColor = (platform: string): string => {
+    return PLATFORM_COLORS[platform] || "#6b7280";
+};
+
 export default function Crowdfunding() {
     const user = useUser();
     const userId = (user as any)?.id as string | undefined;
@@ -20,12 +34,26 @@ export default function Crowdfunding() {
     const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
     const [chartVisible, setChartVisible] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     // Filtrer les projets selon la recherche
     const filteredProjects = (projects || []).filter((p) =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.platform.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Pagination pour le tableau
+    const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+
+    // Réinitialiser la page quand la recherche change
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    };
 
     // Séparer projets actifs et terminés
     const activeProjects = filteredProjects.filter((p) => p.status === "active");
@@ -115,7 +143,7 @@ export default function Crowdfunding() {
                         type="text"
                         placeholder="Rechercher par nom ou plateforme..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className={styles.searchInput}
                     />
                 </div>
@@ -187,7 +215,7 @@ export default function Crowdfunding() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredProjects.map((project) => {
+                                    {paginatedProjects.map((project) => {
                                         const start = new Date(project.startDate);
                                         const end = new Date(start);
                                         end.setMonth(start.getMonth() + project.durationMonths);
@@ -199,7 +227,18 @@ export default function Crowdfunding() {
                                         return (
                                             <tr key={project.id}>
                                                 <td>{project.name}</td>
-                                                <td><span className={styles.platformBadge}>{project.platform}</span></td>
+                                                <td>
+                                                    <span
+                                                        className={styles.platformBadge}
+                                                        style={{
+                                                            backgroundColor: `${getPlatformColor(project.platform)}33`,
+                                                            color: getPlatformColor(project.platform),
+                                                            border: `1px solid ${getPlatformColor(project.platform)}66`
+                                                        }}
+                                                    >
+                                                        {project.platform}
+                                                    </span>
+                                                </td>
                                                 <td>{project.amountInvested.toLocaleString("fr-FR")} €</td>
                                                 <td>{project.yieldPercent}%</td>
                                                 <td className={styles.green}>+{project.received.toLocaleString("fr-FR")} €</td>
@@ -232,6 +271,29 @@ export default function Crowdfunding() {
                                     })}
                                 </tbody>
                             </table>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className={styles.pagination}>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className={styles.paginationBtn}
+                                    >
+                                        ← Précédent
+                                    </button>
+                                    <span className={styles.paginationInfo}>
+                                        Page {currentPage} sur {totalPages} ({filteredProjects.length} projets)
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className={styles.paginationBtn}
+                                    >
+                                        Suivant →
+                                    </button>
+                                </div>
+                            )}
 
                             {(!projects || projects.length === 0) && !loading && (
                                 <div className={styles.emptyState}>

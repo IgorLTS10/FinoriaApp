@@ -54,10 +54,18 @@ export default function DividendsChart({ projects }: Props) {
             };
         });
 
-    // Obtenir toutes les plateformes uniques
-    const allPlatforms = Array.from(
-        new Set(projects.map((p) => p.platform))
-    );
+    // Obtenir toutes les plateformes uniques et les trier par montant total (décroissant)
+    const platformTotals = projects.reduce((acc, p) => {
+        const total = p.transactions
+            .filter((t) => t.type === "dividend")
+            .reduce((sum, t) => sum + t.amount, 0);
+        acc[p.platform] = (acc[p.platform] || 0) + total;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const allPlatforms = Object.entries(platformTotals)
+        .sort(([, a], [, b]) => b - a) // Trier par montant décroissant (plus gros en premier = en bas du stack)
+        .map(([platform]) => platform);
 
     if (chartData.length === 0) {
         return (
@@ -97,12 +105,13 @@ export default function DividendsChart({ projects }: Props) {
                         wrapperStyle={{ paddingTop: "20px" }}
                         iconType="circle"
                     />
-                    {allPlatforms.map((platform) => (
+                    {allPlatforms.map((platform, index) => (
                         <Bar
                             key={platform}
                             dataKey={platform}
+                            stackId="a"
                             fill={getColorForPlatform(platform)}
-                            radius={[4, 4, 0, 0]}
+                            radius={index === 0 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
                             name={platform}
                         />
                     ))}
