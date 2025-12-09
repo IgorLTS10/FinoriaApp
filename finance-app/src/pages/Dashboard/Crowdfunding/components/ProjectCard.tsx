@@ -5,9 +5,10 @@ type Props = {
     project: CrowdfundingProject;
     onAddTransaction: () => void;
     onViewDetails: () => void;
+    onCloseProject: () => void;
 };
 
-export default function ProjectCard({ project, onAddTransaction, onViewDetails }: Props) {
+export default function ProjectCard({ project, onAddTransaction, onViewDetails, onCloseProject }: Props) {
     const {
         name,
         platform,
@@ -51,7 +52,7 @@ export default function ProjectCard({ project, onAddTransaction, onViewDetails }
     const needsAlert = status === "active" && !hasDividendThisMonth;
 
     return (
-        <div className={styles.card}>
+        <div className={`${styles.card} ${status === "finished" ? styles.finished : ""}`}>
             <div className={styles.header}>
                 <div className={styles.platformBadge}>{platform}</div>
                 <div className={styles.badges}>
@@ -60,7 +61,11 @@ export default function ProjectCard({ project, onAddTransaction, onViewDetails }
                             ⚠️
                         </div>
                     )}
-                    <div className={`${styles.statusBadge} ${styles[status]}`}>
+                    <div
+                        className={`${styles.statusBadge} ${styles[status]} ${status === "active" ? styles.clickable : ""}`}
+                        onClick={status === "active" ? onCloseProject : undefined}
+                        title={status === "active" ? "Cliquer pour clôturer le projet" : ""}
+                    >
                         {status === "active" ? "En cours" : "Terminé"}
                     </div>
                 </div>

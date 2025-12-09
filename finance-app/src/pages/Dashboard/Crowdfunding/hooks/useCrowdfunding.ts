@@ -102,7 +102,7 @@ export function useCrowdfunding(userId?: string) {
         }
     };
 
-    const updateProject = async (id: string, userId: string, updates: Partial<NewProjectPayload>) => {
+    const updateProject = async (id: string, userId: string, updates: any) => {
         try {
             await axios.patch("/api/crowdfunding/projects", { id, userId, ...updates });
             await fetchProjects();

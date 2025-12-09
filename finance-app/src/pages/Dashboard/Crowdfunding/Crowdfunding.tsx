@@ -18,12 +18,35 @@ export default function Crowdfunding() {
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
     const [detailsModal, setDetailsModal] = useState<CrowdfundingProject | null>(null);
     const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+    const [chartVisible, setChartVisible] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Filtrer les projets selon la recherche
+    const filteredProjects = (projects || []).filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.platform.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Séparer projets actifs et terminés
+    const activeProjects = filteredProjects.filter((p) => p.status === "active");
+    const finishedProjects = filteredProjects.filter((p) => p.status === "finished");
+
+    const handleCloseProject = async (project: CrowdfundingProject) => {
+        if (!confirm(`Êtes-vous sûr de vouloir clôturer le projet "${project.name}" ?`)) {
+            return;
+        }
+        try {
+            await updateProject(project.id, userId!, { status: "finished" });
+        } catch (err: any) {
+            alert(err.message);
+        }
+    };
 
     // Calculs globaux
     const totalInvested = (projects || []).reduce((sum, p) => sum + p.amountInvested, 0);
     const totalReceived = (projects || []).reduce((sum, p) => sum + p.received, 0);
     const totalRefunded = (projects || []).reduce((sum, p) => sum + p.refunded, 0);
-    const activeProjects = (projects || []).filter(p => p.status === "active").length;
+    const activeProjectsCount = (projects || []).filter(p => p.status === "active").length;
 
     return (
         <div className={styles.page}>
@@ -69,26 +92,76 @@ export default function Crowdfunding() {
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiLabel}>Projets Actifs</div>
-                    <div className={styles.kpiValue}>{activeProjects}</div>
+                    <div className={styles.kpiValue}>{activeProjectsCount}</div>
                 </div>
             </div>
 
             {error && <div className={styles.error}>{error}</div>}
+
+            {/* Collapsible Chart */}
+            {projects && projects.length > 0 && (
+                <div className={styles.chartSection}>
+                    <button onClick={() => setChartVisible(!chartVisible)} className={styles.chartToggle}>
+                        {chartVisible ? "▼" : "▶"} Graphique des dividendes
+                    </button>
+                    {chartVisible && <DividendsChart projects={projects} />}
+                </div>
+            )}
+
+            {/* Search Bar for Table View */}
+            {viewMode === "table" && (
+                <div className={styles.searchBar}>
+                    <input
+                        type="text"
+                        placeholder="Rechercher par nom ou plateforme..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={styles.searchInput}
+                    />
+                </div>
+            )}
 
             {loading && (!projects || projects.length === 0) ? (
                 <div className={styles.loading}>Chargement...</div>
             ) : (
                 <>
                     {viewMode === "cards" ? (
-                        <div className={styles.grid}>
-                            {(projects || []).map((project) => (
-                                <ProjectCard
-                                    key={project.id}
-                                    project={project}
-                                    onAddTransaction={() => setTransactionModal({ open: true, projectId: project.id, projectName: project.name })}
-                                    onViewDetails={() => setDetailsModal(project)}
-                                />
-                            ))}
+                        <>
+                            {/* Active Projects */}
+                            {activeProjects.length > 0 && (
+                                <>
+                                    <h2 className={styles.sectionTitle}>Projets actifs</h2>
+                                    <div className={styles.grid}>
+                                        {activeProjects.map((project) => (
+                                            <ProjectCard
+                                                key={project.id}
+                                                project={project}
+                                                onAddTransaction={() => setTransactionModal({ open: true, projectId: project.id, projectName: project.name })}
+                                                onViewDetails={() => setDetailsModal(project)}
+                                                onCloseProject={() => handleCloseProject(project)}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Finished Projects */}
+                            {finishedProjects.length > 0 && (
+                                <>
+                                    <h2 className={styles.sectionTitle}>Projets terminés</h2>
+                                    <div className={styles.grid}>
+                                        {finishedProjects.map((project) => (
+                                            <ProjectCard
+                                                key={project.id}
+                                                project={project}
+                                                onAddTransaction={() => setTransactionModal({ open: true, projectId: project.id, projectName: project.name })}
+                                                onViewDetails={() => setDetailsModal(project)}
+                                                onCloseProject={() => handleCloseProject(project)}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
 
                             {(!projects || projects.length === 0) && !loading && (
                                 <div className={styles.emptyState}>
@@ -96,7 +169,7 @@ export default function Crowdfunding() {
                                     <button onClick={() => setAddProjectOpen(true)}>Commencer</button>
                                 </div>
                             )}
-                        </div>
+                        </>
                     ) : (
                         <div className={styles.tableContainer}>
                             <table className={styles.table}>
@@ -108,12 +181,13 @@ export default function Crowdfunding() {
                                         <th>Rendement</th>
                                         <th>Reçu</th>
                                         <th>Remboursé</th>
+                                        <th>Statut</th>
                                         <th>Progression</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {(projects || []).map((project) => {
+                                    {filteredProjects.map((project) => {
                                         const start = new Date(project.startDate);
                                         const end = new Date(start);
                                         end.setMonth(start.getMonth() + project.durationMonths);
@@ -130,6 +204,11 @@ export default function Crowdfunding() {
                                                 <td>{project.yieldPercent}%</td>
                                                 <td className={styles.green}>+{project.received.toLocaleString("fr-FR")} €</td>
                                                 <td>{project.refunded.toLocaleString("fr-FR")} €</td>
+                                                <td>
+                                                    <span className={`${styles.statusBadge} ${styles[project.status]}`}>
+                                                        {project.status === "active" ? "En cours" : "Terminé"}
+                                                    </span>
+                                                </td>
                                                 <td>
                                                     <div className={styles.progressCell}>
                                                         <span>{Math.round(progress)}%</span>
@@ -163,11 +242,6 @@ export default function Crowdfunding() {
                         </div>
                     )}
                 </>
-            )}
-
-            {/* Dividends Chart */}
-            {projects && projects.length > 0 && (
-                <DividendsChart projects={projects} />
             )}
 
             {userId && (
