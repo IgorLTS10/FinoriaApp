@@ -17,6 +17,7 @@ import Metaux from "./pages/Dashboard/Metaux/Metaux";
 import Roadmap from "./pages/Dashboard/Roadmap/Roadmap";
 import Crypto from "./pages/Dashboard/Crypto/Crypto"
 import Actions from "./pages/Dashboard/Actions/Actions"
+import Crowdfunding from "./pages/Dashboard/Crowdfunding/Crowdfunding"
 import Settings from "./pages/Dashboard/Settings/Settings";
 import { PreferencesProvider } from "./state/PreferencesContext";
 
@@ -71,6 +72,7 @@ function Root() {
           <Route path="roadmap" element={<Roadmap />} />
           <Route path="crypto" element={<Crypto />} />
           <Route path="actions" element={<Actions />} />
+          <Route path="crowdfunding" element={<Crowdfunding />} />
           <Route path="parametres" element={<Settings />} />
         </Route>
       </Routes>

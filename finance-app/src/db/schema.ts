@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, timestamp, uuid, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, timestamp, uuid, date, integer } from "drizzle-orm/pg-core";
 
 export const holdings = pgTable("holdings", {
   id: serial("id").primaryKey(),
@@ -105,4 +105,28 @@ export const stockPrices = pgTable("stock_prices", {
   price: numeric("price", { precision: 20, scale: 8 }).notNull(),
   currency: text("currency").notNull(), // USD
   asOf: timestamp("as_of").defaultNow().notNull(),
+});
+
+export const crowdfundingProjects = pgTable("crowdfunding_projects", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),
+  name: text("name").notNull(),
+  platform: text("platform").notNull(), // Bricks, Bienpreter...
+  amountInvested: numeric("amount_invested", { precision: 12, scale: 2 }).notNull(),
+  yieldPercent: numeric("yield_percent", { precision: 5, scale: 2 }).notNull(),
+  startDate: date("start_date").notNull(),
+  durationMonths: integer("duration_months").notNull(),
+  status: text("status").default("active"), // active, finished
+  imageUrl: text("image_url"),
+  contractUrl: text("contract_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const crowdfundingTransactions = pgTable("crowdfunding_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => crowdfundingProjects.id, { onDelete: 'cascade' }).notNull(),
+  type: text("type").notNull(), // dividend, refund
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
