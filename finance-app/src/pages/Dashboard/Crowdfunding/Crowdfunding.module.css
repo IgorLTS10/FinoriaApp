@@ -22,6 +22,8 @@
     justify-content: space-between;
     align-items: flex-end;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .title {
@@ -37,6 +39,41 @@
 .subtitle {
     color: #a0a0a0;
     margin: 0.5rem 0 0 0;
+}
+
+.headerActions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.viewToggle {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.25rem;
+    border-radius: 8px;
+}
+
+.toggleBtn {
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.toggleBtn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.toggleBtn.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
 }
 
 .addButton {
@@ -135,4 +172,102 @@
 
 .emptyState button:hover {
     background: rgba(255, 255, 255, 0.05);
+}
+
+/* Table View Styles */
+.tableContainer {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.table th {
+    padding: 1rem;
+    text-align: left;
+    color: #a0a0a0;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.table tbody tr {
+    transition: background 0.2s;
+}
+
+.table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.platformBadge {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.progressCell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.progressCell span {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+}
+
+.miniProgressBar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    width: 80px;
+}
+
+.miniProgressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+}
+
+.tableActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tableBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.tableBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
 }

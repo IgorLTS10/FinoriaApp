@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
+export type Transaction = {
+    id: string;
+    projectId: string;
+    type: "dividend" | "refund";
+    amount: number;
+    date: string;
+    createdAt: string;
+};
+
 export type CrowdfundingProject = {
     id: string;
     userId: string;
@@ -18,6 +27,7 @@ export type CrowdfundingProject = {
     // Aggregated data
     received: number;
     refunded: number;
+    transactions: Transaction[];
 };
 
 export type NewProjectPayload = {
@@ -92,6 +102,24 @@ export function useCrowdfunding(userId?: string) {
         }
     };
 
+    const updateProject = async (id: string, userId: string, updates: Partial<NewProjectPayload>) => {
+        try {
+            await axios.patch("/api/crowdfunding/projects", { id, userId, ...updates });
+            await fetchProjects();
+        } catch (err: any) {
+            throw new Error(err.response?.data?.error || err.message);
+        }
+    };
+
+    const updateTransaction = async (id: string, updates: Partial<NewTransactionPayload>) => {
+        try {
+            await axios.patch("/api/crowdfunding/transactions", { id, ...updates });
+            await fetchProjects();
+        } catch (err: any) {
+            throw new Error(err.response?.data?.error || err.message);
+        }
+    };
+
     return {
         projects,
         loading,
@@ -99,6 +127,8 @@ export function useCrowdfunding(userId?: string) {
         addProject,
         addTransaction,
         deleteTransaction,
+        updateProject,
+        updateTransaction,
         refresh: fetchProjects,
     };
 }

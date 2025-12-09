@@ -20,6 +20,30 @@
     align-items: center;
 }
 
+.badges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.alertBadge {
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+    cursor: help;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
 .platformBadge {
     background: rgba(59, 130, 246, 0.2);
     color: #60a5fa;
@@ -65,7 +89,13 @@
     font-size: 1.1rem;
     font-weight: 600;
     color: #fff;
-    margin: 0;
+    margin: 0 0 0.5rem 0;
+}
+
+.dateInfo {
+    font-size: 0.8rem;
+    color: #a0a0a0;
+    margin-bottom: 0.5rem;
 }
 
 .grid {
@@ -118,16 +148,23 @@
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
     border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progressFill.green {
+    background: linear-gradient(90deg, #10b981, #34d399);
 }
 
 .footer {
     margin-top: auto;
     padding-top: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    gap: 0.5rem;
 }
 
-.addButton {
-    width: 100%;
+.detailsButton {
+    flex: 1;
     padding: 0.5rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -138,7 +175,24 @@
     transition: all 0.2s;
 }
 
-.addButton:hover {
+.detailsButton:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
+}
+
+.addButton {
+    flex: 1;
+    padding: 0.5rem;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    color: #60a5fa;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addButton:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
 }

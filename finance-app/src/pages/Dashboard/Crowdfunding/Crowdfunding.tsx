@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { useUser } from "@stackframe/react";
 import styles from "./Crowdfunding.module.css";
-import { useCrowdfunding } from "./hooks/useCrowdfunding";
+import { useCrowdfunding, type CrowdfundingProject } from "./hooks/useCrowdfunding";
 import ProjectCard from "./components/ProjectCard";
 import AddProjectModal from "./components/AddProjectModal";
 import TransactionsModal from "./components/TransactionsModal";
+import ProjectDetailsModal from "./components/ProjectDetailsModal";
+import DividendsChart from "./components/DividendsChart";
 
 export default function Crowdfunding() {
     const user = useUser();
     const userId = (user as any)?.id as string | undefined;
 
-    const { projects, loading, error, addProject, addTransaction } = useCrowdfunding(userId);
+    const { projects, loading, error, addProject, addTransaction, updateProject, updateTransaction, deleteTransaction } = useCrowdfunding(userId);
 
     const [addProjectOpen, setAddProjectOpen] = useState(false);
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
+    const [detailsModal, setDetailsModal] = useState<CrowdfundingProject | null>(null);
+    const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
     // Calculs globaux
     const totalInvested = (projects || []).reduce((sum, p) => sum + p.amountInvested, 0);
@@ -28,9 +32,25 @@ export default function Crowdfunding() {
                     <h1 className={styles.title}>Crowdfunding</h1>
                     <p className={styles.subtitle}>Gérez vos investissements participatifs</p>
                 </div>
-                <button className={styles.addButton} onClick={() => setAddProjectOpen(true)}>
-                    + Nouveau projet
-                </button>
+                <div className={styles.headerActions}>
+                    <div className={styles.viewToggle}>
+                        <button
+                            className={`${styles.toggleBtn} ${viewMode === "cards" ? styles.active : ""}`}
+                            onClick={() => setViewMode("cards")}
+                        >
+                            📊 Cards
+                        </button>
+                        <button
+                            className={`${styles.toggleBtn} ${viewMode === "table" ? styles.active : ""}`}
+                            onClick={() => setViewMode("table")}
+                        >
+                            📋 Tableau
+                        </button>
+                    </div>
+                    <button className={styles.addButton} onClick={() => setAddProjectOpen(true)}>
+                        + Nouveau projet
+                    </button>
+                </div>
             </div>
 
             {/* KPIs */}
@@ -58,41 +78,133 @@ export default function Crowdfunding() {
             {loading && (!projects || projects.length === 0) ? (
                 <div className={styles.loading}>Chargement...</div>
             ) : (
-                <div className={styles.grid}>
-                    {(projects || []).map((project) => (
-                        <ProjectCard
-                            key={project.id}
-                            project={project}
-                            onAddTransaction={() => setTransactionModal({ open: true, projectId: project.id, projectName: project.name })}
-                        />
-                    ))}
+                <>
+                    {viewMode === "cards" ? (
+                        <div className={styles.grid}>
+                            {(projects || []).map((project) => (
+                                <ProjectCard
+                                    key={project.id}
+                                    project={project}
+                                    onAddTransaction={() => setTransactionModal({ open: true, projectId: project.id, projectName: project.name })}
+                                    onViewDetails={() => setDetailsModal(project)}
+                                />
+                            ))}
 
-                    {(!projects || projects.length === 0) && !loading && (
-                        <div className={styles.emptyState}>
-                            <p>Aucun projet pour le moment.</p>
-                            <button onClick={() => setAddProjectOpen(true)}>Commencer</button>
+                            {(!projects || projects.length === 0) && !loading && (
+                                <div className={styles.emptyState}>
+                                    <p>Aucun projet pour le moment.</p>
+                                    <button onClick={() => setAddProjectOpen(true)}>Commencer</button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Plateforme</th>
+                                        <th>Investi</th>
+                                        <th>Rendement</th>
+                                        <th>Reçu</th>
+                                        <th>Remboursé</th>
+                                        <th>Progression</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(projects || []).map((project) => {
+                                        const start = new Date(project.startDate);
+                                        const end = new Date(start);
+                                        end.setMonth(start.getMonth() + project.durationMonths);
+                                        const now = new Date();
+                                        const totalDuration = end.getTime() - start.getTime();
+                                        const elapsed = now.getTime() - start.getTime();
+                                        const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+
+                                        return (
+                                            <tr key={project.id}>
+                                                <td>{project.name}</td>
+                                                <td><span className={styles.platformBadge}>{project.platform}</span></td>
+                                                <td>{project.amountInvested.toLocaleString("fr-FR")} €</td>
+                                                <td>{project.yieldPercent}%</td>
+                                                <td className={styles.green}>+{project.received.toLocaleString("fr-FR")} €</td>
+                                                <td>{project.refunded.toLocaleString("fr-FR")} €</td>
+                                                <td>
+                                                    <div className={styles.progressCell}>
+                                                        <span>{Math.round(progress)}%</span>
+                                                        <div className={styles.miniProgressBar}>
+                                                            <div className={styles.miniProgressFill} style={{ width: `${progress}%` }} />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className={styles.tableActions}>
+                                                        <button onClick={() => setDetailsModal(project)} className={styles.tableBtn}>
+                                                            👁️
+                                                        </button>
+                                                        <button onClick={() => setTransactionModal({ open: true, projectId: project.id, projectName: project.name })} className={styles.tableBtn}>
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+
+                            {(!projects || projects.length === 0) && !loading && (
+                                <div className={styles.emptyState}>
+                                    <p>Aucun projet pour le moment.</p>
+                                    <button onClick={() => setAddProjectOpen(true)}>Commencer</button>
+                                </div>
+                            )}
                         </div>
                     )}
-                </div>
+                </>
+            )}
+
+            {/* Dividends Chart */}
+            {projects && projects.length > 0 && (
+                <DividendsChart projects={projects} />
             )}
 
             {userId && (
-                <AddProjectModal
-                    open={addProjectOpen}
-                    onClose={() => setAddProjectOpen(false)}
-                    onSubmit={addProject}
-                    userId={userId}
-                />
-            )}
+                <>
+                    <AddProjectModal
+                        open={addProjectOpen}
+                        onClose={() => setAddProjectOpen(false)}
+                        onSubmit={addProject}
+                        userId={userId}
+                    />
 
-            {transactionModal && (
-                <TransactionsModal
-                    open={transactionModal.open}
-                    onClose={() => setTransactionModal(null)}
-                    onSubmit={addTransaction}
-                    projectId={transactionModal.projectId}
-                    projectName={transactionModal.projectName}
-                />
+                    {transactionModal && (
+                        <TransactionsModal
+                            open={transactionModal.open}
+                            onClose={() => setTransactionModal(null)}
+                            onSubmit={addTransaction}
+                            projectId={transactionModal.projectId}
+                            projectName={transactionModal.projectName}
+                        />
+                    )}
+
+                    {detailsModal && (
+                        <ProjectDetailsModal
+                            open={true}
+                            onClose={() => setDetailsModal(null)}
+                            project={detailsModal}
+                            userId={userId}
+                            onUpdateProject={updateProject}
+                            onUpdateTransaction={updateTransaction}
+                            onDeleteTransaction={deleteTransaction}
+                            onAddTransaction={() => {
+                                setTransactionModal({ open: true, projectId: detailsModal.id, projectName: detailsModal.name });
+                                setDetailsModal(null);
+                            }}
+                        />
+                    )}
+                </>
             )}
         </div>
     );

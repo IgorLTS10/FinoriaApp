@@ -53,6 +53,10 @@ export async function handleCrowdfundingProjects(req: VercelRequest, res: Vercel
                     yieldPercent: Number(p.yieldPercent),
                     received,
                     refunded,
+                    transactions: projectTx.map(t => ({
+                        ...t,
+                        amount: Number(t.amount)
+                    })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
                 };
             });
 
@@ -84,6 +88,38 @@ export async function handleCrowdfundingProjects(req: VercelRequest, res: Vercel
                 .returning();
 
             return res.status(200).json({ success: true, project: inserted });
+        }
+
+        if (req.method === "PATCH") {
+            const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+            const { id, userId, ...updates } = body;
+
+            if (!id || !userId) {
+                return res.status(400).json({ error: "id et userId sont obligatoires" });
+            }
+
+            const updateData: any = {};
+            if (updates.name !== undefined) updateData.name = updates.name;
+            if (updates.platform !== undefined) updateData.platform = updates.platform;
+            if (updates.amountInvested !== undefined) updateData.amountInvested = String(updates.amountInvested);
+            if (updates.yieldPercent !== undefined) updateData.yieldPercent = String(updates.yieldPercent);
+            if (updates.startDate !== undefined) updateData.startDate = updates.startDate;
+            if (updates.durationMonths !== undefined) updateData.durationMonths = Number(updates.durationMonths);
+            if (updates.status !== undefined) updateData.status = updates.status;
+            if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
+            if (updates.contractUrl !== undefined) updateData.contractUrl = updates.contractUrl;
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ error: "Aucun champ à mettre à jour" });
+            }
+
+            const [updated] = await db
+                .update(crowdfundingProjects)
+                .set(updateData)
+                .where(eq(crowdfundingProjects.id, id))
+                .returning();
+
+            return res.status(200).json({ success: true, project: updated });
         }
 
         return res.status(405).json({ error: "Method not allowed" });
@@ -133,6 +169,37 @@ export async function handleCrowdfundingTransactions(req: VercelRequest, res: Ve
                 .where(eq(crowdfundingTransactions.id, id));
 
             return res.status(200).json({ success: true });
+        }
+
+        if (req.method === "PATCH") {
+            const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+            const { id, type, amount, date } = body;
+
+            if (!id) {
+                return res.status(400).json({ error: "id est obligatoire" });
+            }
+
+            const updateData: any = {};
+            if (type !== undefined) {
+                if (!["dividend", "refund"].includes(type)) {
+                    return res.status(400).json({ error: "Type invalide" });
+                }
+                updateData.type = type;
+            }
+            if (amount !== undefined) updateData.amount = String(amount);
+            if (date !== undefined) updateData.date = date;
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ error: "Aucun champ à mettre à jour" });
+            }
+
+            const [updated] = await db
+                .update(crowdfundingTransactions)
+                .set(updateData)
+                .where(eq(crowdfundingTransactions.id, id))
+                .returning();
+
+            return res.status(200).json({ success: true, transaction: updated });
         }
 
         return res.status(405).json({ error: "Method not allowed" });
