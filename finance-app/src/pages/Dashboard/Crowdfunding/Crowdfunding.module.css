@@ -131,6 +131,15 @@
     margin-bottom: 2rem;
 }
 
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
 .chartToggle {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -138,17 +147,144 @@
     padding: 0.75rem 1rem;
     color: #fff;
     cursor: pointer;
-    width: 100%;
     text-align: left;
     font-size: 1rem;
     font-weight: 600;
     transition: all 0.2s;
-    margin-bottom: 1rem;
+    min-width: 250px;
 }
 
 .chartToggle:hover {
     background: rgba(255, 255, 255, 0.05);
 }
+
+.chartFiltersContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.periodFilters,
+.dateFilters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filterLabel {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.chartFilters {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.25rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filterBtn {
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.filterBtn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.filterBtn.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.25));
+    color: #60a5fa;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* Date Filters */
+.dateInputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dateInput {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: #fff;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    width: 150px;
+}
+
+.dateInput:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dateInput::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.dateSeparator {
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.clearDateBtn {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.clearDateBtn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tableAlertIcon {
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+    cursor: help;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
 
 /* Search Bar */
 .searchBar {

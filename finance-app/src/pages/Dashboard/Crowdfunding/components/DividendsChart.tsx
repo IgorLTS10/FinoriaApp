@@ -5,6 +5,8 @@ import styles from "./DividendsChart.module.css";
 type Props = {
     projects: CrowdfundingProject[];
     period: "month" | "quarter" | "year";
+    startDate?: string;
+    endDate?: string;
 };
 
 // Couleurs par plateforme
@@ -154,16 +156,29 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
 };
 
-export default function DividendsChart({ projects, period }: Props) {
+export default function DividendsChart({ projects, period, startDate, endDate }: Props) {
     // Grouper les dividendes par période et par plateforme
     const dividendsByPeriod: Record<string, Record<string, number>> = {};
     // Grouper les investissements par période
     const investmentsByPeriod: Record<string, number> = {};
 
+    // Convertir les dates de filtre en objets Date
+    const filterStartDate = startDate ? new Date(startDate) : null;
+    const filterEndDate = endDate ? new Date(endDate) : null;
+
     projects.forEach((project) => {
         // Traiter les dividendes
         project.transactions
-            .filter((t) => t.type === "dividend")
+            .filter((t) => {
+                if (t.type !== "dividend") return false;
+
+                // Filtrer par date si spécifié
+                const txDate = new Date(t.date);
+                if (filterStartDate && txDate < filterStartDate) return false;
+                if (filterEndDate && txDate > filterEndDate) return false;
+
+                return true;
+            })
             .forEach((tx) => {
                 const date = new Date(tx.date);
                 const periodKey = getPeriodKey(date, period);
@@ -180,8 +195,13 @@ export default function DividendsChart({ projects, period }: Props) {
             });
 
         // Traiter les investissements (date de début du projet)
-        const startDate = new Date(project.startDate);
-        const periodKey = getPeriodKey(startDate, period);
+        const projectStartDate = new Date(project.startDate);
+
+        // Filtrer par date si spécifié
+        if (filterStartDate && projectStartDate < filterStartDate) return;
+        if (filterEndDate && projectStartDate > filterEndDate) return;
+
+        const periodKey = getPeriodKey(projectStartDate, period);
 
         if (!investmentsByPeriod[periodKey]) {
             investmentsByPeriod[periodKey] = 0;

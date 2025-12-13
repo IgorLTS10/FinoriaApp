@@ -36,6 +36,8 @@ export default function Crowdfunding() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [chartPeriod, setChartPeriod] = useState<"month" | "quarter" | "year">("month");
+    const [chartStartDate, setChartStartDate] = useState("");
+    const [chartEndDate, setChartEndDate] = useState("");
     const itemsPerPage = 20;
 
     // Filtrer les projets selon la recherche
@@ -135,29 +137,76 @@ export default function Crowdfunding() {
                             {chartVisible ? "▼" : "▶"} Graphique des dividendes
                         </button>
                         {chartVisible && (
-                            <div className={styles.chartFilters}>
-                                <button
-                                    className={`${styles.filterBtn} ${chartPeriod === "month" ? styles.active : ""}`}
-                                    onClick={() => setChartPeriod("month")}
-                                >
-                                    Mois
-                                </button>
-                                <button
-                                    className={`${styles.filterBtn} ${chartPeriod === "quarter" ? styles.active : ""}`}
-                                    onClick={() => setChartPeriod("quarter")}
-                                >
-                                    Trimestre
-                                </button>
-                                <button
-                                    className={`${styles.filterBtn} ${chartPeriod === "year" ? styles.active : ""}`}
-                                    onClick={() => setChartPeriod("year")}
-                                >
-                                    Année
-                                </button>
+                            <div className={styles.chartFiltersContainer}>
+                                {/* Filtres de période */}
+                                <div className={styles.periodFilters}>
+                                    <span className={styles.filterLabel}>Période :</span>
+                                    <div className={styles.chartFilters}>
+                                        <button
+                                            className={`${styles.filterBtn} ${chartPeriod === "month" ? styles.active : ""}`}
+                                            onClick={() => setChartPeriod("month")}
+                                        >
+                                            📅 Mois
+                                        </button>
+                                        <button
+                                            className={`${styles.filterBtn} ${chartPeriod === "quarter" ? styles.active : ""}`}
+                                            onClick={() => setChartPeriod("quarter")}
+                                        >
+                                            📊 Trimestre
+                                        </button>
+                                        <button
+                                            className={`${styles.filterBtn} ${chartPeriod === "year" ? styles.active : ""}`}
+                                            onClick={() => setChartPeriod("year")}
+                                        >
+                                            📈 Année
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Filtres de date */}
+                                <div className={styles.dateFilters}>
+                                    <span className={styles.filterLabel}>Plage :</span>
+                                    <div className={styles.dateInputs}>
+                                        <input
+                                            type="date"
+                                            value={chartStartDate}
+                                            onChange={(e) => setChartStartDate(e.target.value)}
+                                            className={styles.dateInput}
+                                            placeholder="Début"
+                                        />
+                                        <span className={styles.dateSeparator}>→</span>
+                                        <input
+                                            type="date"
+                                            value={chartEndDate}
+                                            onChange={(e) => setChartEndDate(e.target.value)}
+                                            className={styles.dateInput}
+                                            placeholder="Fin"
+                                        />
+                                        {(chartStartDate || chartEndDate) && (
+                                            <button
+                                                onClick={() => {
+                                                    setChartStartDate("");
+                                                    setChartEndDate("");
+                                                }}
+                                                className={styles.clearDateBtn}
+                                                title="Réinitialiser les dates"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
-                    {chartVisible && <DividendsChart projects={projects} period={chartPeriod} />}
+                    {chartVisible && (
+                        <DividendsChart
+                            projects={projects}
+                            period={chartPeriod}
+                            startDate={chartStartDate}
+                            endDate={chartEndDate}
+                        />
+                    )}
                 </div>
             )}
 
