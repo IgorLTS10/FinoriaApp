@@ -127,17 +127,29 @@ export default function DividendsChart({ projects, period }: Props) {
         <div className={styles.chartContainer}>
             <h3 className={styles.title}>Dividendes et investissements par {period === "month" ? "mois" : period === "quarter" ? "trimestre" : "année"}</h3>
             <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 60, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                     <XAxis
                         dataKey="period"
                         stroke="#a0a0a0"
                         style={{ fontSize: "0.85rem" }}
                     />
+                    {/* Axe Y gauche pour les dividendes */}
                     <YAxis
+                        yAxisId="left"
                         stroke="#a0a0a0"
                         style={{ fontSize: "0.85rem" }}
                         tickFormatter={(value) => `${value}€`}
+                        label={{ value: 'Dividendes', angle: -90, position: 'insideLeft', style: { fill: '#a0a0a0' } }}
+                    />
+                    {/* Axe Y droit pour les investissements */}
+                    <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        stroke="#fbbf24"
+                        style={{ fontSize: "0.85rem" }}
+                        tickFormatter={(value) => `${value}€`}
+                        label={{ value: 'Investi', angle: 90, position: 'insideRight', style: { fill: '#fbbf24' } }}
                     />
                     <Tooltip
                         contentStyle={{
@@ -162,6 +174,7 @@ export default function DividendsChart({ projects, period }: Props) {
                             fill={getColorForPlatform(platform)}
                             radius={index === 0 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
                             name={platform}
+                            yAxisId="left"
                         />
                     ))}
                     {/* Courbe pour les investissements */}
@@ -172,7 +185,7 @@ export default function DividendsChart({ projects, period }: Props) {
                         strokeWidth={3}
                         dot={{ fill: "#fbbf24", r: 4 }}
                         name="Investi"
-                        yAxisId={0}
+                        yAxisId="right"
                     />
                 </ComposedChart>
             </ResponsiveContainer>
