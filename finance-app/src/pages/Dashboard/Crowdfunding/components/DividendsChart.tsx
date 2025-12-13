@@ -50,6 +50,110 @@ const formatPeriodLabel = (periodKey: string, period: "month" | "quarter" | "yea
     }
 };
 
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || !payload.length) return null;
+
+    // Séparer les dividendes et l'investissement
+    const invested = payload.find((p: any) => p.dataKey === "invested");
+    const dividends = payload.filter((p: any) => p.dataKey !== "invested");
+
+    // Calculer le total des dividendes
+    const totalDividends = dividends.reduce((sum: number, p: any) => sum + (p.value || 0), 0);
+
+    return (
+        <div style={{
+            background: "linear-gradient(135deg, #1a1d24 0%, #252932 100%)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            minWidth: "200px",
+        }}>
+            {/* Période */}
+            <div style={{
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#fff",
+                marginBottom: "12px",
+                paddingBottom: "8px",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
+            }}>
+                {label}
+            </div>
+
+            {/* Investissement */}
+            {invested && invested.value > 0 && (
+                <div style={{
+                    marginBottom: "12px",
+                    padding: "8px",
+                    background: "rgba(251, 191, 36, 0.1)",
+                    borderRadius: "6px",
+                    borderLeft: "3px solid #fbbf24",
+                }}>
+                    <div style={{ fontSize: "0.75rem", color: "#fbbf24", marginBottom: "4px" }}>
+                        💰 Investi
+                    </div>
+                    <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fbbf24" }}>
+                        {invested.value.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                    </div>
+                </div>
+            )}
+
+            {/* Dividendes */}
+            {dividends.length > 0 && (
+                <div style={{
+                    padding: "8px",
+                    background: "rgba(59, 130, 246, 0.05)",
+                    borderRadius: "6px",
+                    borderLeft: "3px solid #3b82f6",
+                }}>
+                    <div style={{ fontSize: "0.75rem", color: "#60a5fa", marginBottom: "6px" }}>
+                        📊 Dividendes reçus
+                    </div>
+
+                    {/* Total */}
+                    <div style={{
+                        fontSize: "1.1rem",
+                        fontWeight: 700,
+                        color: "#34d399",
+                        marginBottom: "8px",
+                    }}>
+                        {totalDividends.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                    </div>
+
+                    {/* Détail par plateforme */}
+                    <div style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "4px" }}>
+                        Par plateforme :
+                    </div>
+                    {dividends.map((entry: any, index: number) => (
+                        <div key={index} style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "4px",
+                            fontSize: "0.8rem",
+                        }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <div style={{
+                                    width: "8px",
+                                    height: "8px",
+                                    borderRadius: "50%",
+                                    background: entry.fill || entry.color,
+                                }} />
+                                <span style={{ color: "#d1d5db" }}>{entry.name}</span>
+                            </div>
+                            <span style={{ color: "#fff", fontWeight: 600 }}>
+                                {entry.value.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function DividendsChart({ projects, period }: Props) {
     // Grouper les dividendes par période et par plateforme
     const dividendsByPeriod: Record<string, Record<string, number>> = {};
@@ -151,16 +255,7 @@ export default function DividendsChart({ projects, period }: Props) {
                         tickFormatter={(value) => `${value}€`}
                         label={{ value: 'Investi', angle: 90, position: 'insideRight', style: { fill: '#fbbf24' } }}
                     />
-                    <Tooltip
-                        contentStyle={{
-                            backgroundColor: "#1a1d24",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            borderRadius: "8px",
-                            color: "#fff",
-                        }}
-                        formatter={(value: number) => [`${value.toFixed(2)}€`, ""]}
-                        labelStyle={{ color: "#a0a0a0" }}
-                    />
+                    <Tooltip content={<CustomTooltip />} />
                     <Legend
                         wrapperStyle={{ paddingTop: "20px" }}
                         iconType="circle"
