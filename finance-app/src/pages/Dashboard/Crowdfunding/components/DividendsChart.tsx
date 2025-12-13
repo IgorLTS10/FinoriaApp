@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import type { CrowdfundingProject } from "../hooks/useCrowdfunding";
 import styles from "./DividendsChart.module.css";
 
@@ -53,8 +53,11 @@ const formatPeriodLabel = (periodKey: string, period: "month" | "quarter" | "yea
 export default function DividendsChart({ projects, period }: Props) {
     // Grouper les dividendes par période et par plateforme
     const dividendsByPeriod: Record<string, Record<string, number>> = {};
+    // Grouper les investissements par période
+    const investmentsByPeriod: Record<string, number> = {};
 
     projects.forEach((project) => {
+        // Traiter les dividendes
         project.transactions
             .filter((t) => t.type === "dividend")
             .forEach((tx) => {
@@ -71,15 +74,31 @@ export default function DividendsChart({ projects, period }: Props) {
 
                 dividendsByPeriod[periodKey][project.platform] += tx.amount;
             });
+
+        // Traiter les investissements (date de début du projet)
+        const startDate = new Date(project.startDate);
+        const periodKey = getPeriodKey(startDate, period);
+
+        if (!investmentsByPeriod[periodKey]) {
+            investmentsByPeriod[periodKey] = 0;
+        }
+        investmentsByPeriod[periodKey] += project.amountInvested;
     });
 
+    // Obtenir toutes les périodes (union des dividendes et investissements)
+    const allPeriods = new Set([
+        ...Object.keys(dividendsByPeriod),
+        ...Object.keys(investmentsByPeriod)
+    ]);
+
     // Convertir en format pour Recharts
-    const chartData = Object.entries(dividendsByPeriod)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([periodKey, platforms]) => {
+    const chartData = Array.from(allPeriods)
+        .sort((a, b) => a.localeCompare(b))
+        .map((periodKey) => {
             return {
                 period: formatPeriodLabel(periodKey, period),
-                ...platforms,
+                invested: investmentsByPeriod[periodKey] || 0,
+                ...(dividendsByPeriod[periodKey] || {}),
             };
         });
 
@@ -106,9 +125,9 @@ export default function DividendsChart({ projects, period }: Props) {
 
     return (
         <div className={styles.chartContainer}>
-            <h3 className={styles.title}>Dividendes par {period === "month" ? "mois" : period === "quarter" ? "trimestre" : "année"} et plateforme</h3>
+            <h3 className={styles.title}>Dividendes et investissements par {period === "month" ? "mois" : period === "quarter" ? "trimestre" : "année"}</h3>
             <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                     <XAxis
                         dataKey="period"
@@ -134,6 +153,7 @@ export default function DividendsChart({ projects, period }: Props) {
                         wrapperStyle={{ paddingTop: "20px" }}
                         iconType="circle"
                     />
+                    {/* Barres empilées pour les dividendes par plateforme */}
                     {allPlatforms.map((platform, index) => (
                         <Bar
                             key={platform}
@@ -144,7 +164,17 @@ export default function DividendsChart({ projects, period }: Props) {
                             name={platform}
                         />
                     ))}
-                </BarChart>
+                    {/* Courbe pour les investissements */}
+                    <Line
+                        type="monotone"
+                        dataKey="invested"
+                        stroke="#fbbf24"
+                        strokeWidth={3}
+                        dot={{ fill: "#fbbf24", r: 4 }}
+                        name="Investi"
+                        yAxisId={0}
+                    />
+                </ComposedChart>
             </ResponsiveContainer>
         </div>
     );
