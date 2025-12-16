@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { handleCryptoPositions, handleCryptoPrices, handleCryptoSearch } from "./handlers/crypto.js";
 import { handleStocks, handleStockPrices, handleStockPricesRefresh } from "./handlers/stocks.js";
+import { handleStockSearch } from "./handlers/stocks-search.js";
 import { handleMetaux } from "./handlers/metaux.js";
 import { handleCrowdfundingProjects, handleCrowdfundingTransactions } from "./handlers/crowdfunding.js";
 import { handleFx } from "./handlers/fx.js";
@@ -26,6 +27,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Stocks routes
         if (path === "/api/stocks") {
             return await handleStocks(req, res);
+        }
+        if (path === "/api/stocks/search") {
+            return await handleStockSearch(req, res);
         }
         if (path === "/api/stocks/prices") {
             return await handleStockPrices(req, res);

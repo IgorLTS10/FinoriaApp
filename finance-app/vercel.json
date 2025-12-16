@@ -13,6 +13,10 @@
     {
       "path": "/api/crypto/prices",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/stocks/prices/refresh",
+      "schedule": "0 2 * * *"
     }
   ]
 }
