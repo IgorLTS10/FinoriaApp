@@ -3,7 +3,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { db } from "../../src/db/client.js";
 import { stockPositions, stockPrices } from "../../src/db/schema.js";
 import { eq, and, desc, inArray } from "drizzle-orm";
-import yahooFinance from "yahoo-finance2";
+import YahooFinanceModule from "yahoo-finance2";
+
+const yahooFinance = new YahooFinanceModule();
 
 export async function handleStocks(req: VercelRequest, res: VercelResponse) {
     try {

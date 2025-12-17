@@ -19,14 +19,17 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Mock de Yahoo Finance
 // On remplace le vrai module par une version contrôlée
+// Maintenant on mock le constructeur pour retourner un objet avec search
 vi.mock('yahoo-finance2', () => ({
-    default: {
+    default: vi.fn(() => ({
         search: vi.fn(),
-    },
+        quote: vi.fn(),
+    })),
 }));
 
 // Import du mock pour pouvoir le contrôler dans les tests
-import yahooFinance from 'yahoo-finance2';
+import YahooFinanceModule from 'yahoo-finance2';
+const yahooFinance = new YahooFinanceModule();
 
 describe('handleStockSearch API', () => {
     // Variables pour simuler req et res

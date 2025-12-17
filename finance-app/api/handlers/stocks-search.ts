@@ -1,6 +1,8 @@
 // api/handlers/stocks-search.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import yahooFinance from "yahoo-finance2";
+import YahooFinanceModule from "yahoo-finance2";
+
+const yahooFinance = new YahooFinanceModule();
 
 export type StockSearchResult = {
     symbol: string;
