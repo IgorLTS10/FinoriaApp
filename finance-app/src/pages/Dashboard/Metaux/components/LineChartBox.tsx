@@ -15,25 +15,29 @@ import { useUser } from "@stackframe/react";
 import { useMetaux } from "../hooks/useMetaux";
 import { usePortfolioHistory } from "../hooks/usePortfolioHistory";
 
-// map metal type → code métal (FX)
-const TYPE_TO_METAL_CODE: Record<
-  "or" | "argent" | "platine" | "palladium",
-  "XAU" | "XAG" | "XPT" | "XPD"
-> = {
-  or: "XAU",
-  argent: "XAG",
-  platine: "XPT",
-  palladium: "XPD",
-};
-
-function normalizeWeightToGrams(poids: number, unite: "g" | "oz") {
-  return unite === "oz" ? poids * 31.1035 : poids;
-}
-
 function formatDateLabel(isoDate: string) {
   const d = new Date(isoDate);
   if (Number.isNaN(d.getTime())) return isoDate;
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+}
+
+// Custom Tooltip Component
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className={styles.tooltip}>
+      <p className={styles.tooltipDate}>{label}</p>
+      {payload.map((entry: any, index: number) => (
+        <p key={index} className={styles.tooltipItem} style={{ color: entry.color }}>
+          <span className={styles.tooltipLabel}>{entry.name}:</span>
+          <span className={styles.tooltipValue}>
+            {entry.value.toLocaleString("fr-FR")} €
+          </span>
+        </p>
+      ))}
+    </div>
+  );
 }
 
 export default function LineChartBox() {
@@ -52,32 +56,21 @@ export default function LineChartBox() {
     );
   }
 
-  // 1) Montants investis + valeur actuelle "as-if" par date d'achat
-  const investDeltaByDate: Record<
-    string,
-    { invested: number; current: number }
-  > = {};
+  // 1) Montants investis par date d'achat
+  const investDeltaByDate: Record<string, number> = {};
 
   for (const r of rows) {
     const dateKey = r.dateAchat.slice(0, 10);
-
     const investedValue = convertForDisplay(r.prixAchat, r.deviseAchat);
 
-    const metalCode = TYPE_TO_METAL_CODE[r.type];
-    const pricePerOunce = convert(1, metalCode, displayCurrency);
-    const pricePerGram = pricePerOunce / 31.1035;
-    const weightG = normalizeWeightToGrams(r.poids, r.unite);
-    const currentValue = weightG * pricePerGram;
-
     if (!investDeltaByDate[dateKey]) {
-      investDeltaByDate[dateKey] = { invested: 0, current: 0 };
+      investDeltaByDate[dateKey] = 0;
     }
 
-    investDeltaByDate[dateKey].invested += investedValue;
-    investDeltaByDate[dateKey].current += currentValue;
+    investDeltaByDate[dateKey] += investedValue;
   }
 
-  // 2) Série historique (valeur réelle par jour en EUR → convertie en displayCurrency)
+  // 2) Série historique hebdomadaire (valeur réelle par lundi en EUR → convertie en displayCurrency)
   const historyByDate: Record<string, number> = {};
   for (const h of history) {
     const dateKey = h.date; // YYYY-MM-DD
@@ -85,7 +78,7 @@ export default function LineChartBox() {
     historyByDate[dateKey] = valueDisplay;
   }
 
-  // 3) Union de toutes les dates (achats + historique)
+  // 3) Union de toutes les dates (achats + historique hebdomadaire)
   const allDatesSet = new Set<string>([
     ...Object.keys(investDeltaByDate),
     ...Object.keys(historyByDate),
@@ -94,22 +87,19 @@ export default function LineChartBox() {
 
   // 4) Construire les séries cumulées
   let cumInvested = 0;
-  let cumCurrent = 0;
 
   const data = allDates.map((d) => {
     const delta = investDeltaByDate[d];
     if (delta) {
-      cumInvested += delta.invested;
-      cumCurrent += delta.current;
+      cumInvested += delta;
     }
 
-    const historyValue = historyByDate[d] ?? null;
+    const weeklyValue = historyByDate[d] ?? null;
 
     return {
       name: formatDateLabel(d),
       invested: Math.round(cumInvested),
-      current: Math.round(cumCurrent),
-      history: historyValue !== null ? Math.round(historyValue) : null,
+      weekly: weeklyValue !== null ? Math.round(weeklyValue) : null,
     };
   });
 
@@ -127,7 +117,7 @@ export default function LineChartBox() {
               Number(v).toLocaleString("fr-FR", { maximumFractionDigits: 0 })
             }
           />
-          <Tooltip />
+          <Tooltip content={<CustomTooltip />} />
           <Legend />
 
           {/* Ligne investissement cumulé */}
@@ -139,23 +129,15 @@ export default function LineChartBox() {
             strokeWidth={3}
           />
 
-          {/* Ligne valeur actuelle "as-if" (revalorisée au spot d'aujourd'hui) */}
+          {/* Ligne valeur hebdomadaire (chaque lundi) */}
           <Line
             type="monotone"
-            dataKey="current"
-            name="Valeur actuelle (spot du jour)"
+            dataKey="weekly"
+            name="Valeur (hebdomadaire)"
             stroke="#10b981"
             strokeWidth={3}
-          />
-
-          {/* Ligne valeur historique réelle (avec prix des jours passés) */}
-          <Line
-            type="monotone"
-            dataKey="history"
-            name="Valeur historique (jour par jour)"
-            stroke="#f97316"
-            strokeWidth={3}
-            dot={false}
+            dot={{ r: 4 }}
+            connectNulls
           />
         </LineChart>
       </ResponsiveContainer>

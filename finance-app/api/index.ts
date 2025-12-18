@@ -3,6 +3,7 @@ import { handleCryptoPositions, handleCryptoPrices, handleCryptoSearch } from ".
 import { handleStocks, handleStockPrices, handleStockPricesRefresh } from "./handlers/stocks.js";
 import { handleStockSearch } from "./handlers/stocks-search.js";
 import { handleMetaux } from "./handlers/metaux.js";
+import { handleMetalPricesRefresh, handleMetalPortfolioHistory } from "./handlers/metaux-prices.js";
 import { handleCrowdfundingProjects, handleCrowdfundingTransactions } from "./handlers/crowdfunding.js";
 import { handleFx } from "./handlers/fx.js";
 import { handleIdeas } from "./handlers/ideas.js";
@@ -41,6 +42,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Metaux route
         if (path === "/api/metaux") {
             return await handleMetaux(req, res);
+        }
+        if (path === "/api/metaux/prices/refresh") {
+            return await handleMetalPricesRefresh(req, res);
+        }
+        if (path === "/api/metaux/portfolio-history") {
+            return await handleMetalPortfolioHistory(req, res);
         }
 
         // Crowdfunding routes

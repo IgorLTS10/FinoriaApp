@@ -14,22 +14,38 @@
 .tooltip {
   background: rgba(15, 23, 42, 0.96);
   border-radius: 8px;
-  padding: 8px 10px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  color: #e5e7eb;
-  font-size: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  min-width: 180px;
+}
+
+.tooltipDate {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #f1f5f9;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.tooltipItem {
+  margin: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .tooltipLabel {
-  font-size: 11px;
-  opacity: 0.75;
-  margin-bottom: 2px;
+  font-size: 12px;
+  opacity: 0.85;
+  color: #cbd5e1;
 }
 
 .tooltipValue {
   font-size: 13px;
   font-weight: 600;
+  color: #fff;
 }
-
