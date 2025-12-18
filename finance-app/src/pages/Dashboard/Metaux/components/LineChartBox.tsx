@@ -22,7 +22,7 @@ function formatDateLabel(isoDate: string) {
 }
 
 // Custom Tooltip Component
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, currency }: any) {
   if (!active || !payload || !payload.length) return null;
 
   return (
@@ -32,7 +32,7 @@ function CustomTooltip({ active, payload, label }: any) {
         <p key={index} className={styles.tooltipItem} style={{ color: entry.color }}>
           <span className={styles.tooltipLabel}>{entry.name}:</span>
           <span className={styles.tooltipValue}>
-            {entry.value.toLocaleString("fr-FR")} €
+            {entry.value.toLocaleString("fr-FR")} {currency}
           </span>
         </p>
       ))}
@@ -117,7 +117,7 @@ export default function LineChartBox() {
               Number(v).toLocaleString("fr-FR", { maximumFractionDigits: 0 })
             }
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip currency={displayCurrency} />} />
           <Legend />
 
           {/* Ligne investissement cumulé */}
