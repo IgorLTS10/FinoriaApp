@@ -17,10 +17,6 @@
     {
       "path": "/api/stocks/prices/refresh",
       "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/metaux/prices/refresh",
-      "schedule": "0 2 * * 1"
     }
   ]
 }

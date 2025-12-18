@@ -1,0 +1,31 @@
+# Refresh Metal Prices Weekly
+# Runs every Monday at 2 AM UTC
+
+name: Refresh Metal Prices
+
+on:
+  schedule:
+    # Every Monday at 2 AM UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Refresh metal prices
+        run: |
+          curl -X POST https://finoria-app.vercel.app/api/metaux/prices/refresh \
+            -H "Content-Type: application/json" \
+            -w "\n%{http_code}\n" \
+            -o response.json
+          
+          echo "Response:"
+          cat response.json
+          
+          # Check if request was successful
+          if [ $(tail -n1 response.json) -ne 200 ]; then
+            echo "Failed to refresh metal prices"
+            exit 1
+          fi
