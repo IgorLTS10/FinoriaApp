@@ -172,19 +172,41 @@ export async function handleCryptoPrices(req: VercelRequest, res: VercelResponse
 
             const pricesBySymbol: Record<string, { price: number; currency: string; asOf: string }> = {};
 
+            // Récupérer le taux de change EUR -> currency si nécessaire
+            let fxRate = 1;
+            if (currency !== "EUR") {
+                const fxRows = await db
+                    .select()
+                    .from(fxRates)
+                    .where(and(eq(fxRates.base, "EUR"), eq(fxRates.quote, currency)))
+                    .orderBy(desc(fxRates.asOf))
+                    .limit(1);
+
+                if (fxRows[0]) {
+                    fxRate = Number(fxRows[0].rate);
+                } else {
+                    console.warn(`No FX rate found for EUR -> ${currency}, using 1`);
+                }
+            }
+
             for (const symbol of symbols) {
+                // Toujours récupérer les prix en EUR (qui sont stockés en base)
                 const rows = await db
                     .select()
                     .from(cryptoPrices)
-                    .where(and(eq(cryptoPrices.symbol, symbol), eq(cryptoPrices.currency, currency)))
+                    .where(and(eq(cryptoPrices.symbol, symbol), eq(cryptoPrices.currency, "EUR")))
                     .orderBy(desc(cryptoPrices.asOf))
                     .limit(1);
 
                 const row = rows[0];
                 if (row) {
+                    // Convertir le prix EUR vers la devise demandée
+                    const priceEur = Number(row.price);
+                    const priceConverted = priceEur * fxRate;
+
                     pricesBySymbol[symbol] = {
-                        price: Number(row.price),
-                        currency: row.currency,
+                        price: priceConverted,
+                        currency: currency, // Retourner la devise demandée
                         asOf: row.asOf.toISOString(),
                     };
                 }
