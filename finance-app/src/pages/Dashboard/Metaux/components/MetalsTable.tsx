@@ -21,8 +21,52 @@ const TYPE_TO_METAL_CODE: Record<
   palladium: "XPD",
 };
 
+// Configuration des couleurs et icônes par métal
+const METAL_CONFIG = {
+  or: { label: "Or", icon: "🥇", color: "#FDB931", bg: "rgba(253, 185, 49, 0.15)" },
+  argent: { label: "Argent", icon: "🥈", color: "#A8A9AD", bg: "rgba(168, 169, 173, 0.15)" },
+  platine: { label: "Platine", icon: "💎", color: "#8C92AC", bg: "rgba(140, 146, 172, 0.15)" },
+  palladium: { label: "Palladium", icon: "⚪", color: "#536878", bg: "rgba(83, 104, 120, 0.15)" },
+};
+
 function normalizeWeightToGrams(poids: number, unite: "g" | "oz") {
   return unite === "oz" ? poids * 31.1035 : poids;
+}
+
+// Composant Chip pour afficher le type de métal
+function MetalChip({ type }: { type: MetalRow["type"] }) {
+  const config = METAL_CONFIG[type];
+
+  return (
+    <span
+      className={styles.metalChip}
+      style={{
+        color: config.color,
+        background: config.bg,
+        borderColor: config.color
+      }}
+    >
+      <span className={styles.metalIcon}>{config.icon}</span>
+      <span>{config.label}</span>
+    </span>
+  );
+}
+
+// Composant pour afficher le gain/perte
+function GainLossIndicator({ buyPrice, currentValue }: { buyPrice: number; currentValue: number }) {
+  const diff = currentValue - buyPrice;
+  const percent = ((diff / buyPrice) * 100).toFixed(1);
+
+  const isPositive = diff > 0;
+  const isNeutral = Math.abs(diff) < 0.01;
+
+  return (
+    <div className={styles.gainLoss}>
+      <span className={isPositive ? styles.positive : isNeutral ? styles.neutral : styles.negative}>
+        {isPositive ? "↗" : isNeutral ? "➡" : "↘"} {percent}%
+      </span>
+    </div>
+  );
 }
 
 export default function MetalsTable({
@@ -55,9 +99,9 @@ export default function MetalsTable({
             <tr>
               <th>Métal</th>
               <th>Poids</th>
-              <th>Prix d’achat</th>
-              <th>Valeur (actuelle)</th>
-              <th>Devise d’origine</th>
+              <th>Prix d'achat</th>
+              <th>Valeur actuelle</th>
+              <th>Performance</th>
               <th></th>
             </tr>
           </thead>
@@ -65,13 +109,13 @@ export default function MetalsTable({
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6}>Chargement...</td>
+                <td colSpan={5}>Chargement...</td>
               </tr>
             )}
 
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={6}>Aucune position pour l’instant.</td>
+                <td colSpan={5}>Aucune position pour l'instant.</td>
               </tr>
             )}
 
@@ -82,7 +126,7 @@ export default function MetalsTable({
                 let currentValueDisplay = 0;
 
                 if (metalCode) {
-                  // prix d’1 once du métal dans la devise d’affichage
+                  // prix d'1 once du métal dans la devise d'affichage
                   const pricePerOunceInDisplay = convert(
                     1,
                     metalCode,
@@ -101,17 +145,26 @@ export default function MetalsTable({
                   );
                 }
 
+                const buyPriceConverted = convertForDisplay(r.prixAchat, r.deviseAchat);
+
                 return (
                   <tr key={r.id}>
-                    <td>{labelForMetal(r.type)}</td>
+                    <td>
+                      <MetalChip type={r.type} />
+                    </td>
                     <td>
                       {r.poids} {r.unite}
                     </td>
                     <td>
-                      {r.prixAchat.toFixed(2)} {r.deviseAchat}
+                      {formatter.format(buyPriceConverted)}
                     </td>
                     <td>{formatter.format(currentValueDisplay)}</td>
-                    <td>{r.deviseAchat}</td>
+                    <td>
+                      <GainLossIndicator
+                        buyPrice={buyPriceConverted}
+                        currentValue={currentValueDisplay}
+                      />
+                    </td>
                     <td>
                       <button
                         type="button"
@@ -140,19 +193,4 @@ export default function MetalsTable({
       {error && <div className={styles.error}>{error}</div>}
     </div>
   );
-}
-
-function labelForMetal(t: MetalRow["type"]) {
-  switch (t) {
-    case "or":
-      return "Or";
-    case "argent":
-      return "Argent";
-    case "platine":
-      return "Platine";
-    case "palladium":
-      return "Palladium";
-    default:
-      return t;
-  }
 }

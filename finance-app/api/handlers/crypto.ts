@@ -2,7 +2,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-import { cryptoPositions, cryptoPrices } from "../../src/db/schema.js";
+import { cryptoPositions, cryptoPrices, fxRates } from "../../src/db/schema.js";
 import { sql as rawSql, and, desc, eq } from "drizzle-orm";
 
 const connectionString = process.env.DATABASE_URL;

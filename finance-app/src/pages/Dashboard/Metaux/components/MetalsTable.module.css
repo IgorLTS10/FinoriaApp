@@ -26,7 +26,7 @@
 }
 
 .tableWrap {
-  background: rgba(255,255,255,.05);
+  background: rgba(255, 255, 255, .05);
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: auto;
@@ -39,19 +39,25 @@
   min-width: 760px;
 }
 
-th, td {
+th,
+td {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 th {
-  background: rgba(255,255,255,.05);
+  background: rgba(255, 255, 255, .05);
   text-align: left;
   font-weight: 600;
 }
 
+tr {
+  transition: all 0.2s ease;
+}
+
 tr:hover td {
-  background: rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, .08);
+  transform: scale(1.01);
 }
 
 .error {
@@ -75,4 +81,45 @@ tr:hover td {
 .deleteButton:hover {
   color: #ef4444;
   transform: scale(1.1);
+}
+
+/* Metal Chip Styles */
+.metalChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1.5px solid;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.metalChip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.metalIcon {
+  font-size: 16px;
+}
+
+/* Gain/Loss Indicator Styles */
+.gainLoss {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+.neutral {
+  color: #94a3b8;
 }
