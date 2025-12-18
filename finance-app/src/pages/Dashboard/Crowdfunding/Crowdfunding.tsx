@@ -31,20 +31,88 @@ export default function Crowdfunding() {
     const [addProjectOpen, setAddProjectOpen] = useState(false);
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
     const [detailsModal, setDetailsModal] = useState<CrowdfundingProject | null>(null);
-    const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+    const [viewMode, setViewMode] = useState<"cards" | "table">("table"); // Default to table
     const [chartVisible, setChartVisible] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [chartPeriod, setChartPeriod] = useState<"month" | "quarter" | "year">("month");
     const [chartStartDate, setChartStartDate] = useState("");
     const [chartEndDate, setChartEndDate] = useState("");
+    const [sortField, setSortField] = useState<"name" | "platform" | "amountInvested" | "yieldPercent" | "received" | "refunded" | "status" | "progress">("name");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+    const [statusFilter, setStatusFilter] = useState<"all" | "active" | "finished">("all");
+    const [platformFilter, setPlatformFilter] = useState<string>("all");
     const itemsPerPage = 20;
 
-    // Filtrer les projets selon la recherche
-    const filteredProjects = (projects || []).filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.platform.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Get unique platforms for filter
+    const uniquePlatforms = Array.from(new Set((projects || []).map(p => p.platform)));
+
+    // Filtrer et trier les projets
+    const filteredProjects = (projects || [])
+        .filter((p) => {
+            const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.platform.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+            const matchesPlatform = platformFilter === "all" || p.platform === platformFilter;
+            return matchesSearch && matchesStatus && matchesPlatform;
+        })
+        .sort((a, b) => {
+            let aValue: any;
+            let bValue: any;
+
+            switch (sortField) {
+                case "name":
+                    aValue = a.name.toLowerCase();
+                    bValue = b.name.toLowerCase();
+                    break;
+                case "platform":
+                    aValue = a.platform.toLowerCase();
+                    bValue = b.platform.toLowerCase();
+                    break;
+                case "amountInvested":
+                    aValue = a.amountInvested;
+                    bValue = b.amountInvested;
+                    break;
+                case "yieldPercent":
+                    aValue = a.yieldPercent;
+                    bValue = b.yieldPercent;
+                    break;
+                case "received":
+                    aValue = a.received;
+                    bValue = b.received;
+                    break;
+                case "refunded":
+                    aValue = a.refunded;
+                    bValue = b.refunded;
+                    break;
+                case "status":
+                    aValue = a.status;
+                    bValue = b.status;
+                    break;
+                case "progress":
+                    const startA = new Date(a.startDate);
+                    const endA = new Date(startA);
+                    endA.setMonth(startA.getMonth() + a.durationMonths);
+                    const now = new Date();
+                    const totalDurationA = endA.getTime() - startA.getTime();
+                    const elapsedA = now.getTime() - startA.getTime();
+                    aValue = Math.min(100, Math.max(0, (elapsedA / totalDurationA) * 100));
+
+                    const startB = new Date(b.startDate);
+                    const endB = new Date(startB);
+                    endB.setMonth(startB.getMonth() + b.durationMonths);
+                    const totalDurationB = endB.getTime() - startB.getTime();
+                    const elapsedB = now.getTime() - startB.getTime();
+                    bValue = Math.min(100, Math.max(0, (elapsedB / totalDurationB) * 100));
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+            if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+            return 0;
+        });
 
     // Pagination pour le tableau
     const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
@@ -58,7 +126,17 @@ export default function Crowdfunding() {
         setCurrentPage(1);
     };
 
-    // Séparer projets actifs et terminés
+    // Handle sort
+    const handleSort = (field: typeof sortField) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    // Séparer projets actifs et terminés (pour la vue cards)
     const activeProjects = filteredProjects.filter((p) => p.status === "active");
     const finishedProjects = filteredProjects.filter((p) => p.status === "finished");
 
@@ -73,11 +151,32 @@ export default function Crowdfunding() {
         }
     };
 
+    const handleToggleStatus = async (project: CrowdfundingProject) => {
+        const newStatus = project.status === "active" ? "finished" : "active";
+        const message = newStatus === "finished"
+            ? `Clôturer le projet "${project.name}" ?`
+            : `Réactiver le projet "${project.name}" ?`;
+
+        if (!confirm(message)) return;
+
+        try {
+            await updateProject(project.id, userId!, { status: newStatus });
+        } catch (err: any) {
+            alert(err.message);
+        }
+    };
+
     // Calculs globaux
     const totalInvested = (projects || []).reduce((sum, p) => sum + p.amountInvested, 0);
     const totalReceived = (projects || []).reduce((sum, p) => sum + p.received, 0);
     const totalRefunded = (projects || []).reduce((sum, p) => sum + p.refunded, 0);
     const activeProjectsCount = (projects || []).filter(p => p.status === "active").length;
+
+    // Render sort icon
+    const renderSortIcon = (field: typeof sortField) => {
+        if (sortField !== field) return " ⇅";
+        return sortDirection === "asc" ? " ↑" : " ↓";
+    };
 
     return (
         <div className={styles.page}>
@@ -210,9 +309,9 @@ export default function Crowdfunding() {
                 </div>
             )}
 
-            {/* Search Bar for Table View */}
+            {/* Search Bar and Filters for Table View */}
             {viewMode === "table" && (
-                <div className={styles.searchBar}>
+                <div className={styles.tableFilters}>
                     <input
                         type="text"
                         placeholder="Rechercher par nom ou plateforme..."
@@ -220,6 +319,31 @@ export default function Crowdfunding() {
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className={styles.searchInput}
                     />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value as any);
+                            setCurrentPage(1);
+                        }}
+                        className={styles.filterSelect}
+                    >
+                        <option value="all">Tous les statuts</option>
+                        <option value="active">En cours</option>
+                        <option value="finished">Terminés</option>
+                    </select>
+                    <select
+                        value={platformFilter}
+                        onChange={(e) => {
+                            setPlatformFilter(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className={styles.filterSelect}
+                    >
+                        <option value="all">Toutes les plateformes</option>
+                        {uniquePlatforms.map(platform => (
+                            <option key={platform} value={platform}>{platform}</option>
+                        ))}
+                    </select>
                 </div>
             )}
 
@@ -278,14 +402,30 @@ export default function Crowdfunding() {
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        <th>Nom</th>
-                                        <th>Plateforme</th>
-                                        <th>Investi</th>
-                                        <th>Rendement</th>
-                                        <th>Reçu</th>
-                                        <th>Remboursé</th>
-                                        <th>Statut</th>
-                                        <th>Progression</th>
+                                        <th onClick={() => handleSort("name")} style={{ cursor: "pointer" }}>
+                                            Nom{renderSortIcon("name")}
+                                        </th>
+                                        <th onClick={() => handleSort("platform")} style={{ cursor: "pointer" }}>
+                                            Plateforme{renderSortIcon("platform")}
+                                        </th>
+                                        <th onClick={() => handleSort("amountInvested")} style={{ cursor: "pointer" }}>
+                                            Investi{renderSortIcon("amountInvested")}
+                                        </th>
+                                        <th onClick={() => handleSort("yieldPercent")} style={{ cursor: "pointer" }}>
+                                            Rendement{renderSortIcon("yieldPercent")}
+                                        </th>
+                                        <th onClick={() => handleSort("received")} style={{ cursor: "pointer" }}>
+                                            Reçu{renderSortIcon("received")}
+                                        </th>
+                                        <th onClick={() => handleSort("refunded")} style={{ cursor: "pointer" }}>
+                                            Remboursé{renderSortIcon("refunded")}
+                                        </th>
+                                        <th onClick={() => handleSort("status")} style={{ cursor: "pointer" }}>
+                                            Statut{renderSortIcon("status")}
+                                        </th>
+                                        <th onClick={() => handleSort("progress")} style={{ cursor: "pointer" }}>
+                                            Progression{renderSortIcon("progress")}
+                                        </th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -309,6 +449,10 @@ export default function Crowdfunding() {
                                         });
                                         const needsAlert = project.status === "active" && !hasDividendThisMonth;
 
+                                        // Calcul du pourcentage de dividendes
+                                        const totalExpected = project.amountInvested * (project.yieldPercent / 100) * (project.durationMonths / 12);
+                                        const dividendPercent = totalExpected > 0 ? ((project.received / totalExpected) * 100).toFixed(1) : "0";
+
                                         return (
                                             <tr key={project.id}>
                                                 <td>
@@ -331,12 +475,19 @@ export default function Crowdfunding() {
                                                         {project.platform}
                                                     </span>
                                                 </td>
-                                                <td>{project.amountInvested.toLocaleString("fr-FR")} €</td>
+                                                <td>{project.amountInvested.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
                                                 <td>{project.yieldPercent}%</td>
-                                                <td className={styles.green}>+{project.received.toLocaleString("fr-FR")} €</td>
-                                                <td>{project.refunded.toLocaleString("fr-FR")} €</td>
+                                                <td className={styles.green}>
+                                                    +{project.received.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                                                    <span className={styles.dividendPercent}> ({dividendPercent}%)</span>
+                                                </td>
+                                                <td>{project.refunded.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
                                                 <td>
-                                                    <span className={`${styles.statusBadge} ${styles[project.status]}`}>
+                                                    <span
+                                                        className={`${styles.statusBadge} ${styles[project.status]} ${styles.clickable}`}
+                                                        onClick={() => handleToggleStatus(project)}
+                                                        title="Cliquer pour changer le statut"
+                                                    >
                                                         {project.status === "active" ? "En cours" : "Terminé"}
                                                     </span>
                                                 </td>

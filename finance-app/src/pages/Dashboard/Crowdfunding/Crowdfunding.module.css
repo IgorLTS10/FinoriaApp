@@ -301,8 +301,17 @@
     margin-bottom: 1.5rem;
 }
 
+/* Table Filters */
+.tableFilters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
 .searchInput {
-    width: 100%;
+    flex: 1;
+    min-width: 250px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -319,6 +328,29 @@
 
 .searchInput::placeholder {
     color: #a0a0a0;
+}
+
+.filterSelect {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 180px;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filterSelect option {
+    background: #1a1a1a;
+    color: #fff;
 }
 
 /* Section Titles */
@@ -403,6 +435,7 @@
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    user-select: none;
 }
 
 .table td {
@@ -434,6 +467,16 @@
     font-size: 0.75rem;
     font-weight: 600;
     display: inline-block;
+    transition: all 0.2s;
+}
+
+.statusBadge.clickable {
+    cursor: pointer;
+}
+
+.statusBadge.clickable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .statusBadge.active {
@@ -444,6 +487,12 @@
 .statusBadge.finished {
     background: rgba(107, 114, 128, 0.2);
     color: #9ca3af;
+}
+
+.dividendPercent {
+    color: #a0a0a0;
+    font-size: 0.85rem;
+    font-weight: normal;
 }
 
 .progressCell {
