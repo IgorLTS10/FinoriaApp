@@ -1,18 +1,26 @@
 import { useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
-import Stats from "./components/Stats";
-import PortfolioPreview from "./components/PortfolioPreview";
 import Features from "./components/Features";
 import CTA from "./components/CTA";
 import Footer from "./components/Footer";
-import Dock from "./components/Dock";
+import { useUser } from "@stackframe/react";
 import "./index.css";
 
 export default function App() {
+  const navigate = useNavigate();
+  const user = useUser();
+
+  // Auto-redirect to dashboard if user is logged in
   useEffect(() => {
-    // petit helper pour scroll vers une section depuis le dock
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    // petit helper pour scroll vers une section
     const handler = (e: any) => {
       if (e.detail?.targetId) {
         const el = document.getElementById(e.detail.targetId);
@@ -36,14 +44,6 @@ export default function App() {
           <Hero />
         </section>
 
-        <section id="stats">
-          <Stats />
-        </section>
-
-        <section id="portfolio">
-          <PortfolioPreview />
-        </section>
-
         <section id="features">
           <Features />
         </section>
@@ -54,10 +54,6 @@ export default function App() {
       </main>
 
       <Footer />
-
-      <AnimatePresence>
-        <Dock />
-      </AnimatePresence>
     </div>
   );
 }

@@ -2,38 +2,70 @@ import { motion } from "framer-motion";
 
 const feats = [
   {
-    t: "Stratégies",
-    d: "Backtests rapides, rééquilibrage, DCA, alertes de drawdown.",
+    icon: "🥇",
+    t: "Métaux précieux",
+    d: "Suivez vos investissements en or, argent, platine et palladium avec des prix en temps réel.",
   },
   {
-    t: "Visualisations",
-    d: "Charts haute fidélité, heatmaps de performance, corrélations.",
+    icon: "₿",
+    t: "Cryptomonnaies",
+    d: "Gérez votre portefeuille crypto avec des données de marché actualisées quotidiennement.",
   },
   {
-    t: "Ouverture",
-    d: "API publique, import CSV/Excel, export JSON, webhooks.",
+    icon: "📈",
+    t: "Actions & ETF",
+    d: "Centralisez vos positions boursières et suivez leur évolution avec des graphiques détaillés.",
   },
   {
-    t: "Sécurité",
-    d: "Chiffrement local, rôles, journaux d’audit (bientôt).",
+    icon: "🏢",
+    t: "Crowdfunding immobilier",
+    d: "Suivez vos projets de crowdfunding, dividendes et performances par plateforme.",
+  },
+  {
+    icon: "💱",
+    t: "Multi-devises",
+    d: "Visualisez votre patrimoine en EUR, USD, PLN ou toute autre devise avec conversion automatique.",
+  },
+  {
+    icon: "📊",
+    t: "Graphiques interactifs",
+    d: "Analysez l'évolution de votre portefeuille avec des visualisations claires et personnalisables.",
   },
 ];
 
 export default function Features() {
   return (
     <div className="section">
-      <div className="section-title">Fonctionnalités clés</div>
+      <motion.div
+        className="section-title"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        Tout ce dont vous avez besoin pour gérer vos investissements
+      </motion.div>
+      <motion.p
+        className="section-subtitle"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+      >
+        Une plateforme complète pour suivre et analyser tous vos actifs
+      </motion.p>
       <div className="features-grid">
         {feats.map((f, i) => (
           <motion.article
             key={f.t}
             className="feature-card"
-            initial={{ scale: 0.96, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
+            initial={{ scale: 0.96, opacity: 0, y: 20 }}
+            whileInView={{ scale: 1, opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.05, type: "spring", stiffness: 120 }}
+            transition={{ delay: i * 0.08, type: "spring", stiffness: 120 }}
+            whileHover={{ scale: 1.03, y: -5 }}
           >
-            <div className="feature-ico" aria-hidden />
+            <div className="feature-ico">{f.icon}</div>
             <h3>{f.t}</h3>
             <p>{f.d}</p>
           </motion.article>

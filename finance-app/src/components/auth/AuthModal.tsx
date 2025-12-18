@@ -53,13 +53,30 @@ export default function AuthModal({
           el.style.display = "none";
         }
       });
+
+      // 3) Intercepter les clics sur les liens de basculement (Vous avez déjà un compte / Pas encore de compte)
+      root.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => {
+        const txt = (link.textContent || "").trim().toLowerCase();
+        if (txt.includes("déjà un compte") || txt.includes("pas encore de compte") || txt.includes("se connecter") || txt.includes("s'inscrire")) {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Basculer vers l'autre mode
+            if (mode === "signIn") {
+              open("signUp");
+            } else {
+              open("signIn");
+            }
+          });
+        }
+      });
     };
 
     clean();
     const mo = new MutationObserver(() => clean());
     mo.observe(root, { childList: true, subtree: true });
     return () => mo.disconnect();
-  }, [mode]);
+  }, [mode, open]);
 
   return (
     <AnimatePresence>
