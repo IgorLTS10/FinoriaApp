@@ -81,7 +81,7 @@ export default function ProjectCard({ project, onAddTransaction, onViewDetails, 
                 <div className={styles.grid}>
                     <div className={styles.item}>
                         <span className={styles.label}>Investi</span>
-                        <span className={styles.value}>{amountInvested.toLocaleString("fr-FR")} €</span>
+                        <span className={styles.value}>{amountInvested.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>
                     </div>
                     <div className={styles.item}>
                         <span className={styles.label}>Rendement</span>
@@ -90,12 +90,12 @@ export default function ProjectCard({ project, onAddTransaction, onViewDetails, 
                     <div className={styles.item}>
                         <span className={styles.label}>Reçu (Div.)</span>
                         <span className={`${styles.value} ${styles.green}`}>
-                            +{received.toLocaleString("fr-FR")} €
+                            +{received.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
                         </span>
                     </div>
                     <div className={styles.item}>
                         <span className={styles.label}>Remboursé</span>
-                        <span className={styles.value}>{refunded.toLocaleString("fr-FR")} €</span>
+                        <span className={styles.value}>{refunded.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>
                     </div>
                 </div>
 
@@ -112,7 +112,7 @@ export default function ProjectCard({ project, onAddTransaction, onViewDetails, 
                 <div className={styles.progressSection}>
                     <div className={styles.progressLabels}>
                         <span>Dividendes ({Math.round(dividendProgress)}%)</span>
-                        <span>Reste {remainingDividends.toFixed(0)} €</span>
+                        <span>Reste {remainingDividends.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>
                     </div>
                     <div className={styles.progressBar}>
                         <div className={`${styles.progressFill} ${styles.green}`} style={{ width: `${dividendProgress}%` }} />
