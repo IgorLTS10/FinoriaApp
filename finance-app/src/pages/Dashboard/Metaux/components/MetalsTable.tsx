@@ -23,10 +23,10 @@ const TYPE_TO_METAL_CODE: Record<
 
 // Configuration des couleurs et icônes par métal
 const METAL_CONFIG = {
-  or: { label: "Or", icon: "🥇", color: "#FDB931", bg: "rgba(253, 185, 49, 0.15)" },
-  argent: { label: "Argent", icon: "🥈", color: "#A8A9AD", bg: "rgba(168, 169, 173, 0.15)" },
-  platine: { label: "Platine", icon: "💎", color: "#8C92AC", bg: "rgba(140, 146, 172, 0.15)" },
-  palladium: { label: "Palladium", icon: "⚪", color: "#536878", bg: "rgba(83, 104, 120, 0.15)" },
+  or: { label: "Or", color: "#FDB931", bg: "rgba(253, 185, 49, 0.15)", gradient: "linear-gradient(135deg, rgba(253, 185, 49, 0.3), rgba(253, 185, 49, 0.1))" },
+  argent: { label: "Argent", color: "#C0C0C0", bg: "rgba(192, 192, 192, 0.15)", gradient: "linear-gradient(135deg, rgba(192, 192, 192, 0.3), rgba(192, 192, 192, 0.1))" },
+  platine: { label: "Platine", color: "#8C92AC", bg: "rgba(140, 146, 172, 0.15)", gradient: "linear-gradient(135deg, rgba(140, 146, 172, 0.3), rgba(140, 146, 172, 0.1))" },
+  palladium: { label: "Palladium", color: "#A8A9AD", bg: "rgba(168, 169, 173, 0.15)", gradient: "linear-gradient(135deg, rgba(168, 169, 173, 0.3), rgba(168, 169, 173, 0.1))" },
 };
 
 function normalizeWeightToGrams(poids: number, unite: "g" | "oz") {
