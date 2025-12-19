@@ -42,12 +42,13 @@ function MetalChip({ type }: { type: MetalRow["type"] }) {
       className={styles.metalChip}
       style={{
         color: config.color,
-        background: config.bg,
-        borderColor: config.color
+        background: config.gradient,
+        borderColor: config.color,
+        boxShadow: `0 2px 8px ${config.color}40`
       }}
     >
-      <span className={styles.metalIcon}>{config.icon}</span>
-      <span>{config.label}</span>
+      <span className={styles.metalDot} style={{ background: config.color }}></span>
+      <span className={styles.metalLabel}>{config.label}</span>
     </span>
   );
 }
