@@ -56,11 +56,82 @@
 }
 
 .kpiCard {
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid var(--border);
   background: rgba(8, 15, 30, 0.9);
-  padding: 12px 14px;
+  padding: 16px 18px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpiCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, rgba(106, 227, 255, 0.08), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.kpiCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  border-color: rgba(106, 227, 255, 0.4);
+}
+
+.kpiCard:hover::before {
+  opacity: 1;
+}
+
+/* Specific card styles */
+.kpiCardInvested {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(8, 15, 30, 0.9));
+}
+
+.kpiCardCurrent {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(8, 15, 30, 0.9));
+}
+
+.kpiCardPerformance {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(8, 15, 30, 0.9));
+}
+
+.kpiCardBestWorst {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(8, 15, 30, 0.9));
+}
+
+.kpiIcon {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(106, 227, 255, 0.3));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.kpiContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .kpiLabel {
@@ -68,45 +139,55 @@
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .kpiValue {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .kpiHint {
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 6px;
+  font-size: 10px;
   color: var(--muted);
+  line-height: 1.4;
 }
 
 .kpiBadgeRow {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
 .badge {
   font-size: 11px;
-  padding: 4px 9px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: rgba(9, 16, 33, 0.9);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
 }
 
 .badgePositive {
   border-color: rgba(80, 220, 180, 0.9);
-  background: rgba(40, 170, 120, 0.16);
+  background: linear-gradient(135deg, rgba(40, 170, 120, 0.25), rgba(40, 170, 120, 0.1));
   color: #cbffe7;
+  box-shadow: 0 4px 12px rgba(40, 170, 120, 0.2);
 }
 
 .badgeNegative {
   border-color: rgba(255, 90, 90, 0.9);
-  background: rgba(255, 80, 80, 0.16);
+  background: linear-gradient(135deg, rgba(255, 80, 80, 0.25), rgba(255, 80, 80, 0.1));
   color: #ffd7d7;
+  box-shadow: 0 4px 12px rgba(255, 80, 80, 0.2);
 }
 
 /* Sections */

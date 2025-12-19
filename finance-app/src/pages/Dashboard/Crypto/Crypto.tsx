@@ -137,58 +137,70 @@ export default function Crypto() {
 
       {/* KPIs principaux */}
       <section className={styles.kpis}>
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Valeur d&apos;achat</div>
-          <div className={styles.kpiValue}>
-            {totalCostBasis ? `${totalCostBasis.toFixed(2)} €` : "—"}
+        <div className={`${styles.kpiCard} ${styles.kpiCardInvested}`}>
+          <div className={styles.kpiIcon}>💰</div>
+          <div className={styles.kpiContent}>
+            <div className={styles.kpiLabel}>Valeur d&apos;achat</div>
+            <div className={styles.kpiValue}>
+              {totalCostBasis ? `${totalCostBasis.toFixed(2)} €` : "—"}
+            </div>
           </div>
         </div>
 
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Valeur actuelle</div>
-          <div className={styles.kpiValue}>
-            {totalCurrentValue ? `${totalCurrentValue.toFixed(2)} €` : "—"}
-          </div>
-          <div className={styles.kpiHint}>
-            {symbols.length === 0
-              ? "Ajoute des positions pour voir la valeur de ton portefeuille."
-              : loadingPrices
-                ? "Mise à jour des prix en cours..."
-                : "Prix basés sur la dernière mise à jour en base."}
-          </div>
-        </div>
-
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Performance globale</div>
-          <div
-            className={`${styles.kpiValue} ${totalPnlAbs > 0 ? styles.positive : totalPnlAbs < 0 ? styles.negative : ""
-              }`}
-          >
-            {totalCurrentValue
-              ? `${totalPnlAbs >= 0 ? "+" : ""}${totalPnlAbs.toFixed(2)} € (${totalPnlPct.toFixed(
-                2
-              )} %)`
-              : "—"}
+        <div className={`${styles.kpiCard} ${styles.kpiCardCurrent}`}>
+          <div className={styles.kpiIcon}>📈</div>
+          <div className={styles.kpiContent}>
+            <div className={styles.kpiLabel}>Valeur actuelle</div>
+            <div className={styles.kpiValue}>
+              {totalCurrentValue ? `${totalCurrentValue.toFixed(2)} €` : "—"}
+            </div>
+            <div className={styles.kpiHint}>
+              {symbols.length === 0
+                ? "Ajoute des positions pour voir la valeur de ton portefeuille."
+                : loadingPrices
+                  ? "Mise à jour des prix en cours..."
+                  : "Prix basés sur la dernière mise à jour en base."}
+            </div>
           </div>
         </div>
 
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Meilleure / Pire perf</div>
-          <div className={styles.kpiBadgeRow}>
-            {bestAsset ? (
-              <span className={`${styles.badge} ${styles.badgePositive}`}>
-                {bestAsset.symbol} {bestAsset.pnlPct!.toFixed(1)} %
-              </span>
-            ) : (
-              <span className={styles.badge}>—</span>
-            )}
-            {worstAsset ? (
-              <span className={`${styles.badge} ${styles.badgeNegative}`}>
-                {worstAsset.symbol} {worstAsset.pnlPct!.toFixed(1)} %
-              </span>
-            ) : (
-              <span className={styles.badge}>—</span>
-            )}
+        <div className={`${styles.kpiCard} ${styles.kpiCardPerformance}`}>
+          <div className={styles.kpiIcon}>{totalPnlAbs > 0 ? '🚀' : totalPnlAbs < 0 ? '📉' : '➡️'}</div>
+          <div className={styles.kpiContent}>
+            <div className={styles.kpiLabel}>Performance globale</div>
+            <div
+              className={`${styles.kpiValue} ${totalPnlAbs > 0 ? styles.positive : totalPnlAbs < 0 ? styles.negative : ""
+                }`}
+            >
+              {totalCurrentValue
+                ? `${totalPnlAbs >= 0 ? "+" : ""}${totalPnlAbs.toFixed(2)} € (${totalPnlPct.toFixed(
+                  2
+                )} %)`
+                : "—"}
+            </div>
+          </div>
+        </div>
+
+        <div className={`${styles.kpiCard} ${styles.kpiCardBestWorst}`}>
+          <div className={styles.kpiIcon}>🏆</div>
+          <div className={styles.kpiContent}>
+            <div className={styles.kpiLabel}>Meilleure / Pire perf</div>
+            <div className={styles.kpiBadgeRow}>
+              {bestAsset ? (
+                <span className={`${styles.badge} ${styles.badgePositive}`}>
+                  🥇 {bestAsset.symbol} {bestAsset.pnlPct!.toFixed(1)} %
+                </span>
+              ) : (
+                <span className={styles.badge}>—</span>
+              )}
+              {worstAsset ? (
+                <span className={`${styles.badge} ${styles.badgeNegative}`}>
+                  📊 {worstAsset.symbol} {worstAsset.pnlPct!.toFixed(1)} %
+                </span>
+              ) : (
+                <span className={styles.badge}>—</span>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -340,7 +352,7 @@ export default function Crypto() {
                       <td>
                         <span className={styles.quantityBadge}>{row.quantity}</span>
                       </td>
-                      <td>{row.buyPriceUnit.toFixed(4)} {row.buyCurrency}</td>
+                      <td>{row.buyPriceUnit.toFixed(2)} {row.buyCurrency}</td>
                       <td>
                         <span className={styles.amountValue}>{row.buyTotal.toFixed(2)} {row.buyCurrency}</span>
                       </td>
