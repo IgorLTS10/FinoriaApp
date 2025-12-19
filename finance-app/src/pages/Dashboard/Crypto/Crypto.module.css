@@ -260,6 +260,113 @@
   border-bottom: none;
 }
 
+/* Enhanced table row with hover effect */
+.tableRow {
+  transition: all 0.2s ease;
+}
+
+.tableRow:hover {
+  background: rgba(106, 227, 255, 0.05);
+  transform: scale(1.005);
+}
+
+/* Crypto cell with logo */
+.tableCryptoCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tableCryptoLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1.5px solid rgba(106, 227, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(106, 227, 255, 0.2);
+}
+
+.tableCryptoLogoPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(106, 227, 255, 0.45), rgba(6, 15, 30, 1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1.5px solid rgba(106, 227, 255, 0.3);
+}
+
+.tableCryptoInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableCryptoSymbol {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+}
+
+.tableCryptoName {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Quantity badge */
+.quantityBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(106, 227, 255, 0.1);
+  border: 1px solid rgba(106, 227, 255, 0.3);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #6ae3ff;
+}
+
+/* Amount and value styling */
+.amountValue,
+.currentValue {
+  font-weight: 600;
+  color: #fff;
+}
+
+.currentValue {
+  color: #6ae3ff;
+}
+
+.dateValue {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Performance cell */
+.performanceCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.performanceValue {
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.performancePct {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.neutral {
+  color: var(--muted);
+}
+
 .tableSymbol {
   display: flex;
   flex-direction: column;

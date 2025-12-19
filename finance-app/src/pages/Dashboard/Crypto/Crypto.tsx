@@ -299,50 +299,100 @@ export default function Crypto() {
                   <th>Quantité</th>
                   <th>Prix unitaire</th>
                   <th>Montant total</th>
-                  <th>Devise</th>
+                  <th>Valeur actuelle</th>
+                  <th>Performance</th>
                   <th>Date d&apos;achat</th>
                   <th>Notes</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>
-                      <div className={styles.tableSymbol}>
-                        <span className={styles.tableSymbolCode}>{row.symbol}</span>
-                        {row.name && (
-                          <span className={styles.tableSymbolName}>{row.name}</span>
+                {rows.map((row) => {
+                  // Calculer la valeur actuelle et la performance
+                  const currentPrice = pricesBySymbol[row.symbol.toUpperCase()];
+                  const currentValue = currentPrice ? row.quantity * currentPrice : undefined;
+                  const pnl = currentValue !== undefined ? currentValue - row.buyTotal : undefined;
+                  const pnlPct = pnl !== undefined && row.buyTotal > 0 ? (pnl / row.buyTotal) * 100 : undefined;
+
+                  return (
+                    <tr key={row.id} className={styles.tableRow}>
+                      <td>
+                        <div className={styles.tableCryptoCell}>
+                          {row.logoUrl ? (
+                            <img
+                              src={row.logoUrl}
+                              alt={row.symbol}
+                              className={styles.tableCryptoLogo}
+                            />
+                          ) : (
+                            <div className={styles.tableCryptoLogoPlaceholder}>
+                              {row.symbol[0] ?? "?"}
+                            </div>
+                          )}
+                          <div className={styles.tableCryptoInfo}>
+                            <span className={styles.tableCryptoSymbol}>{row.symbol}</span>
+                            {row.name && (
+                              <span className={styles.tableCryptoName}>{row.name}</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={styles.quantityBadge}>{row.quantity}</span>
+                      </td>
+                      <td>{row.buyPriceUnit.toFixed(4)} {row.buyCurrency}</td>
+                      <td>
+                        <span className={styles.amountValue}>{row.buyTotal.toFixed(2)} {row.buyCurrency}</span>
+                      </td>
+                      <td>
+                        {currentValue !== undefined ? (
+                          <span className={styles.currentValue}>
+                            {currentValue.toFixed(2)} {currency}
+                          </span>
+                        ) : (
+                          <span className={styles.muted}>—</span>
                         )}
-                      </div>
-                    </td>
-                    <td>{row.quantity}</td>
-                    <td>{row.buyPriceUnit.toFixed(4)}</td>
-                    <td>{row.buyTotal.toFixed(2)}</td>
-                    <td>{row.buyCurrency}</td>
-                    <td>{row.buyDate}</td>
-                    <td className={styles.tableNotes}>
-                      {row.notes || <span className={styles.muted}>—</span>}
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.deleteButton}
-                        onClick={async () => {
-                          if (!window.confirm("Supprimer cette ligne ?")) return;
-                          try {
-                            await deletePosition(row.id);
-                          } catch (err: any) {
-                            console.error(err);
-                            alert(err.message || "Erreur lors de la suppression");
-                          }
-                        }}
-                      >
-                        🗑
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>
+                        {pnl !== undefined && pnlPct !== undefined ? (
+                          <div className={styles.performanceCell}>
+                            <span className={`${styles.performanceValue} ${pnl > 0 ? styles.positive : pnl < 0 ? styles.negative : styles.neutral}`}>
+                              {pnl >= 0 ? '↗' : '↘'} {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} {currency}
+                            </span>
+                            <span className={`${styles.performancePct} ${pnl > 0 ? styles.positive : pnl < 0 ? styles.negative : styles.neutral}`}>
+                              ({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%)
+                            </span>
+                          </div>
+                        ) : (
+                          <span className={styles.muted}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={styles.dateValue}>{row.buyDate}</span>
+                      </td>
+                      <td className={styles.tableNotes}>
+                        {row.notes || <span className={styles.muted}>—</span>}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className={styles.deleteButton}
+                          onClick={async () => {
+                            if (!window.confirm("Supprimer cette ligne ?")) return;
+                            try {
+                              await deletePosition(row.id);
+                            } catch (err: any) {
+                              console.error(err);
+                              alert(err.message || "Erreur lors de la suppression");
+                            }
+                          }}
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
