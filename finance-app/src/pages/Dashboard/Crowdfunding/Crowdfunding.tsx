@@ -8,6 +8,7 @@ import AddProjectModal from "./components/AddProjectModal";
 import TransactionsModal from "./components/TransactionsModal";
 import ProjectDetailsModal from "./components/ProjectDetailsModal";
 import DividendsChart from "./components/DividendsChart";
+import BulkDividendModal from "./components/BulkDividendModal";
 
 
 
@@ -31,6 +32,7 @@ export default function Crowdfunding() {
     };
 
     const [addProjectOpen, setAddProjectOpen] = useState(false);
+    const [bulkDividendOpen, setBulkDividendOpen] = useState(false);
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
     const [detailsModal, setDetailsModal] = useState<CrowdfundingProject | null>(null);
     const [viewMode, setViewMode] = useState<"cards" | "table">("table"); // Default to table
@@ -204,6 +206,9 @@ export default function Crowdfunding() {
                     </div>
                     <button className={styles.addButton} onClick={() => setAddProjectOpen(true)}>
                         + Nouveau projet
+                    </button>
+                    <button className={styles.bulkButton} onClick={() => setBulkDividendOpen(true)}>
+                        📊 Dividendes en masse
                     </button>
                 </div>
             </div>
@@ -587,6 +592,22 @@ export default function Crowdfunding() {
                     )}
                 </>
             )}
+            <BulkDividendModal
+                open={bulkDividendOpen}
+                onClose={() => setBulkDividendOpen(false)}
+                projects={projects || []}
+                onSaveDividends={async (dividends) => {
+                    // Save all dividends in batch
+                    for (const dividend of dividends) {
+                        await addTransaction({
+                            projectId: dividend.projectId,
+                            type: 'dividend',
+                            amount: dividend.amount,
+                            date: dividend.date
+                        });
+                    }
+                }}
+            />
         </div>
     );
 }
