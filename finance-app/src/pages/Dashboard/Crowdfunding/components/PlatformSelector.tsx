@@ -1,0 +1,106 @@
+import { useState, useRef, useEffect } from "react";
+import styles from "./PlatformSelector.module.css";
+import type { Platform } from "../hooks/usePlatforms";
+
+type Props = {
+    platforms: Platform[];
+    selectedId: string;
+    onSelect: (platformId: string) => void;
+    onCreateNew: () => void;
+    disabled?: boolean;
+};
+
+export default function PlatformSelector({ platforms, selectedId, onSelect, onCreateNew, disabled }: Props) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const selectedPlatform = platforms.find(p => p.id === selectedId);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+        }
+    }, [isOpen]);
+
+    const handleSelect = (platformId: string) => {
+        if (platformId === "__new__") {
+            onCreateNew();
+        } else {
+            onSelect(platformId);
+        }
+        setIsOpen(false);
+    };
+
+    return (
+        <div className={styles.container} ref={dropdownRef}>
+            <button
+                type="button"
+                className={styles.trigger}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                disabled={disabled}
+                style={selectedPlatform ? {
+                    borderColor: selectedPlatform.color,
+                    backgroundColor: `${selectedPlatform.color}15`
+                } : undefined}
+            >
+                <span className={styles.triggerText}>
+                    {selectedPlatform ? (
+                        <>
+                            <span
+                                className={styles.colorDot}
+                                style={{ backgroundColor: selectedPlatform.color }}
+                            />
+                            {selectedPlatform.isFavorite && <span className={styles.star}>⭐</span>}
+                            {selectedPlatform.name}
+                        </>
+                    ) : (
+                        "Sélectionner une plateforme"
+                    )}
+                </span>
+                <span className={styles.arrow}>{isOpen ? "▲" : "▼"}</span>
+            </button>
+
+            {isOpen && (
+                <div className={styles.dropdown}>
+                    {platforms.map((platform) => (
+                        <button
+                            key={platform.id}
+                            type="button"
+                            className={`${styles.option} ${platform.id === selectedId ? styles.selected : ""}`}
+                            onClick={() => handleSelect(platform.id)}
+                            style={{
+                                borderLeftColor: platform.color,
+                                backgroundColor: platform.id === selectedId
+                                    ? `${platform.color}20`
+                                    : `${platform.color}08`
+                            }}
+                        >
+                            <span
+                                className={styles.colorDot}
+                                style={{ backgroundColor: platform.color }}
+                            />
+                            {platform.isFavorite && <span className={styles.star}>⭐</span>}
+                            <span className={styles.optionText}>{platform.name}</span>
+                        </button>
+                    ))}
+                    <button
+                        type="button"
+                        className={`${styles.option} ${styles.createNew}`}
+                        onClick={() => handleSelect("__new__")}
+                    >
+                        <span className={styles.createIcon}>➕</span>
+                        <span className={styles.optionText}>Créer une nouvelle plateforme</span>
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
