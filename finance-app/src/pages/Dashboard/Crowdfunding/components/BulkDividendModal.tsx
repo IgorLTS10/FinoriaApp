@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import styles from "./BulkDividendModal.module.css";
 import type { CrowdfundingProject } from "../hooks/useCrowdfunding";
 
@@ -27,7 +27,7 @@ export default function BulkDividendModal({ open, onClose, projects, onSaveDivid
         return projects.filter(project => {
             if (project.status !== 'active') return false;
 
-            const hasDividendThisMonth = project.transactions.some(t => {
+            const hasDividendThisMonth = project.transactions?.some(t => {
                 if (t.type !== 'dividend') return false;
                 const txDate = new Date(t.date);
                 return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
@@ -37,8 +37,12 @@ export default function BulkDividendModal({ open, onClose, projects, onSaveDivid
         });
     }, [projects]);
 
-    // Initialize rows with empty amounts and today's date
-    const [rows, setRows] = useState<Record<string, DividendRow>>(() => {
+    const [rows, setRows] = useState<Record<string, DividendRow>>({});
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Initialize rows when eligibleProjects changes
+    useEffect(() => {
         const initialRows: Record<string, DividendRow> = {};
         eligibleProjects.forEach(project => {
             initialRows[project.id] = {
@@ -47,11 +51,8 @@ export default function BulkDividendModal({ open, onClose, projects, onSaveDivid
                 date: today
             };
         });
-        return initialRows;
-    });
-
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+        setRows(initialRows);
+    }, [eligibleProjects, today]);
 
     const handleAmountChange = (projectId: string, value: string) => {
         // Allow only numbers and decimal point
@@ -144,6 +145,8 @@ export default function BulkDividendModal({ open, onClose, projects, onSaveDivid
                                 <tbody>
                                     {eligibleProjects.map((project) => {
                                         const row = rows[project.id];
+                                        if (!row) return null; // Safety check
+
                                         return (
                                             <tr key={project.id}>
                                                 <td className={styles.projectName}>{project.name}</td>
