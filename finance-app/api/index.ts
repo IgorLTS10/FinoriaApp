@@ -5,6 +5,8 @@ import { handleStockSearch } from "./handlers/stocks-search.js";
 import { handleMetaux } from "./handlers/metaux.js";
 import { handleMetalPricesRefresh, handleMetalPortfolioHistory } from "./handlers/metaux-prices.js";
 import { handleCrowdfundingProjects, handleCrowdfundingTransactions } from "./handlers/crowdfunding.js";
+import crowdfundingPlatformsHandler from "./handlers/crowdfunding-platforms.js";
+import crowdfundingPlatformsFavoriteHandler from "./handlers/crowdfunding-platforms-favorite.js";
 import { handleFx } from "./handlers/fx.js";
 import { handleIdeas } from "./handlers/ideas.js";
 
@@ -56,6 +58,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         if (path === "/api/crowdfunding/transactions") {
             return await handleCrowdfundingTransactions(req, res);
+        }
+        if (path === "/api/crowdfunding/platforms") {
+            return await crowdfundingPlatformsHandler(req, res);
+        }
+        // Handle platform favorites with dynamic platformId
+        if (path.startsWith("/api/crowdfunding/platforms/") && path.endsWith("/favorite")) {
+            // Extract platformId from path: /api/crowdfunding/platforms/{platformId}/favorite
+            const platformId = path.split("/")[4];
+            req.query = { ...req.query, platformId };
+            return await crowdfundingPlatformsFavoriteHandler(req, res);
         }
 
         // FX route
