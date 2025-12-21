@@ -117,7 +117,13 @@ input:focus {
 .platformSelect option {
     background: #1a1d24;
     color: #fff;
-    padding: 0.5rem;
+    padding: 0.75rem;
+    border-left: 3px solid transparent;
+}
+
+/* Dynamic coloring for options - will be applied via inline styles */
+.platformOption {
+    padding: 0.75rem !important;
 }
 
 /* Color indicator */

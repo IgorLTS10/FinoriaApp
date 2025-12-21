@@ -2,6 +2,7 @@ import { useState } from "react";
 import styles from "./AddProjectModal.module.css";
 import type { NewProjectPayload } from "../hooks/useCrowdfunding";
 import { usePlatforms, type Platform } from "../hooks/usePlatforms";
+import PlatformSelector from "./PlatformSelector";
 
 type Props = {
     open: boolean;
@@ -24,7 +25,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
     const [error, setError] = useState<string | null>(null);
 
     // Platform management
-    const { platforms, loading: loadingPlatforms, createPlatform, toggleFavorite } = usePlatforms(userId);
+    const { platforms, loading: loadingPlatforms, createPlatform } = usePlatforms(userId);
     const [showNewPlatformInput, setShowNewPlatformInput] = useState(false);
     const [newPlatformName, setNewPlatformName] = useState("");
     const [creatingPlatform, setCreatingPlatform] = useState(false);
@@ -115,47 +116,13 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                         <label>
                             Plateforme *
                             {!showNewPlatformInput ? (
-                                <div className={styles.platformSelectWrapper}>
-                                    <select
-                                        value={platformId}
-                                        onChange={(e) => {
-                                            if (e.target.value === "__new__") {
-                                                setShowNewPlatformInput(true);
-                                            } else {
-                                                setPlatformId(e.target.value);
-                                            }
-                                        }}
-                                        disabled={loadingPlatforms}
-                                        className={styles.platformSelect}
-                                    >
-                                        <option value="">Sélectionner une plateforme</option>
-                                        {platforms.map((platform: Platform) => (
-                                            <option key={platform.id} value={platform.id}>
-                                                {platform.isFavorite ? "⭐ " : ""}{platform.name}
-                                            </option>
-                                        ))}
-                                        <option value="__new__">➕ Créer une nouvelle plateforme</option>
-                                    </select>
-                                    {platformId && (
-                                        <>
-                                            <div
-                                                className={styles.colorIndicator}
-                                                style={{
-                                                    backgroundColor: platforms.find((p: Platform) => p.id === platformId)?.color || '#6b7280'
-                                                }}
-                                                title={`Couleur: ${platforms.find((p: Platform) => p.id === platformId)?.color}`}
-                                            />
-                                            <button
-                                                type="button"
-                                                className={styles.favoriteBtn}
-                                                onClick={() => toggleFavorite(platformId)}
-                                                title="Ajouter aux favoris"
-                                            >
-                                                {platforms.find((p: Platform) => p.id === platformId)?.isFavorite ? "⭐" : "☆"}
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
+                                <PlatformSelector
+                                    platforms={platforms}
+                                    selectedId={platformId}
+                                    onSelect={setPlatformId}
+                                    onCreateNew={() => setShowNewPlatformInput(true)}
+                                    disabled={loadingPlatforms}
+                                />
                             ) : (
                                 <div className={styles.newPlatformInput}>
                                     <input
