@@ -2,31 +2,33 @@ import { useState } from "react";
 import { useUser } from "@stackframe/react";
 import styles from "./Crowdfunding.module.css";
 import { useCrowdfunding, type CrowdfundingProject } from "./hooks/useCrowdfunding";
+import { usePlatforms } from "./hooks/usePlatforms";
 import ProjectCard from "./components/ProjectCard";
 import AddProjectModal from "./components/AddProjectModal";
 import TransactionsModal from "./components/TransactionsModal";
 import ProjectDetailsModal from "./components/ProjectDetailsModal";
 import DividendsChart from "./components/DividendsChart";
 
-// Couleurs par plateforme (mêmes que le graphique)
-const PLATFORM_COLORS: Record<string, string> = {
-    "Bricks": "#3b82f6",
-    "Bienpreter": "#8b5cf6",
-    "Anaxago": "#10b981",
-    "Fundimmo": "#f59e0b",
-    "Homunity": "#ef4444",
-    "Raizers": "#ec4899",
-};
 
-const getPlatformColor = (platform: string): string => {
-    return PLATFORM_COLORS[platform] || "#6b7280";
-};
 
 export default function Crowdfunding() {
     const user = useUser();
     const userId = (user as any)?.id as string | undefined;
 
     const { projects, loading, error, addProject, addTransaction, updateProject, deleteTransaction } = useCrowdfunding(userId);
+
+    // Fetch platforms for dynamic colors
+    const { platforms } = usePlatforms(userId);
+
+    // Create color map from platforms
+    const platformColors: Record<string, string> = {};
+    platforms.forEach(p => {
+        platformColors[p.name] = p.color;
+    });
+
+    const getPlatformColor = (platform: string): string => {
+        return platformColors[platform] || "#6b7280"; // Default gray if not found
+    };
 
     const [addProjectOpen, setAddProjectOpen] = useState(false);
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
@@ -304,6 +306,7 @@ export default function Crowdfunding() {
                             period={chartPeriod}
                             startDate={chartStartDate}
                             endDate={chartEndDate}
+                            platformColors={platformColors}
                         />
                     )}
                 </div>

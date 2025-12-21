@@ -7,21 +7,10 @@ type Props = {
     period: "month" | "quarter" | "year";
     startDate?: string;
     endDate?: string;
+    platformColors: Record<string, string>; // Dynamic platform colors
 };
 
-// Couleurs par plateforme
-const PLATFORM_COLORS: Record<string, string> = {
-    "Bricks": "#3b82f6",
-    "Bienpreter": "#8b5cf6",
-    "Anaxago": "#10b981",
-    "Fundimmo": "#f59e0b",
-    "Homunity": "#ef4444",
-    "Raizers": "#ec4899",
-};
 
-const getColorForPlatform = (platform: string): string => {
-    return PLATFORM_COLORS[platform] || "#6b7280";
-};
 
 const getQuarter = (month: number): number => {
     return Math.floor(month / 3) + 1;
@@ -156,7 +145,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
 };
 
-export default function DividendsChart({ projects, period, startDate, endDate }: Props) {
+export default function DividendsChart({ projects, period, startDate, endDate, platformColors }: Props) {
+    const getColorForPlatform = (platform: string): string => {
+        return platformColors[platform] || "#6b7280";
+    };
     // Grouper les dividendes par période et par plateforme
     const dividendsByPeriod: Record<string, Record<string, number>> = {};
     // Grouper les investissements par période
