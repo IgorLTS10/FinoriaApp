@@ -149,7 +149,7 @@ export default function BulkDividendModal({ open, onClose, projects, onSaveDivid
                                                 <td className={styles.projectName}>{project.name}</td>
                                                 <td>
                                                     <span className={styles.platformBadge}>
-                                                        {project.platform}
+                                                        {project.platform || 'N/A'}
                                                     </span>
                                                 </td>
                                                 <td className={styles.amount}>

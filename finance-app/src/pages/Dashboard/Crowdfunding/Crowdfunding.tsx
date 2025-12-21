@@ -27,7 +27,8 @@ export default function Crowdfunding() {
         platformColors[p.name] = p.color;
     });
 
-    const getPlatformColor = (platform: string): string => {
+    const getPlatformColor = (platform: string | undefined): string => {
+        if (!platform) return "#6b7280"; // Default gray if platform is undefined
         return platformColors[platform] || "#6b7280"; // Default gray if not found
     };
 
@@ -49,13 +50,13 @@ export default function Crowdfunding() {
     const itemsPerPage = 20;
 
     // Get unique platforms for filter
-    const uniquePlatforms = Array.from(new Set((projects || []).map(p => p.platform)));
+    const uniquePlatforms = Array.from(new Set((projects || []).map(p => p.platform).filter(Boolean)));
 
     // Filtrer et trier les projets
     const filteredProjects = (projects || [])
         .filter((p) => {
             const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.platform.toLowerCase().includes(searchTerm.toLowerCase());
+                (p.platform || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesStatus = statusFilter === "all" || p.status === statusFilter;
             const matchesPlatform = platformFilter === "all" || p.platform === platformFilter;
             return matchesSearch && matchesStatus && matchesPlatform;
