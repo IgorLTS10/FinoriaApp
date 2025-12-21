@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./AddProjectModal.module.css";
 import type { NewProjectPayload } from "../hooks/useCrowdfunding";
-import { usePlatforms } from "../hooks/usePlatforms";
+import { usePlatforms, type Platform } from "../hooks/usePlatforms";
 
 type Props = {
     open: boolean;
@@ -61,7 +61,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
         }
 
         // Find platform name from ID
-        const selectedPlatform = platforms.find(p => p.id === platformId);
+        const selectedPlatform = platforms.find((p: Platform) => p.id === platformId);
         if (!selectedPlatform) {
             setError("Plateforme invalide");
             return;
@@ -129,7 +129,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                                         className={styles.platformSelect}
                                     >
                                         <option value="">Sélectionner une plateforme</option>
-                                        {platforms.map((platform) => (
+                                        {platforms.map((platform: Platform) => (
                                             <option key={platform.id} value={platform.id}>
                                                 {platform.isFavorite ? "⭐ " : ""}{platform.name}
                                             </option>
@@ -143,7 +143,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                                             onClick={() => toggleFavorite(platformId)}
                                             title="Ajouter aux favoris"
                                         >
-                                            {platforms.find(p => p.id === platformId)?.isFavorite ? "⭐" : "☆"}
+                                            {platforms.find((p: Platform) => p.id === platformId)?.isFavorite ? "⭐" : "☆"}
                                         </button>
                                     )}
                                 </div>
