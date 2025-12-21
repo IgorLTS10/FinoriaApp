@@ -25,7 +25,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
     const [error, setError] = useState<string | null>(null);
 
     // Platform management
-    const { platforms, loading: loadingPlatforms, createPlatform } = usePlatforms(userId);
+    const { platforms, loading: loadingPlatforms, createPlatform, toggleFavorite } = usePlatforms(userId);
     const [showNewPlatformInput, setShowNewPlatformInput] = useState(false);
     const [newPlatformName, setNewPlatformName] = useState("");
     const [creatingPlatform, setCreatingPlatform] = useState(false);
@@ -121,6 +121,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                                     selectedId={platformId}
                                     onSelect={setPlatformId}
                                     onCreateNew={() => setShowNewPlatformInput(true)}
+                                    onToggleFavorite={toggleFavorite}
                                     disabled={loadingPlatforms}
                                 />
                             ) : (

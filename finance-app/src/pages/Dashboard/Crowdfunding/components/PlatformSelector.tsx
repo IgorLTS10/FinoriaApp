@@ -7,10 +7,11 @@ type Props = {
     selectedId: string;
     onSelect: (platformId: string) => void;
     onCreateNew: () => void;
+    onToggleFavorite?: (platformId: string) => void;
     disabled?: boolean;
 };
 
-export default function PlatformSelector({ platforms, selectedId, onSelect, onCreateNew, disabled }: Props) {
+export default function PlatformSelector({ platforms, selectedId, onSelect, onCreateNew, onToggleFavorite, disabled }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +38,13 @@ export default function PlatformSelector({ platforms, selectedId, onSelect, onCr
             onSelect(platformId);
         }
         setIsOpen(false);
+    };
+
+    const handleToggleFavorite = (e: React.MouseEvent, platformId: string) => {
+        e.stopPropagation(); // Prevent selecting the platform
+        if (onToggleFavorite) {
+            onToggleFavorite(platformId);
+        }
     };
 
     return (
@@ -71,11 +79,9 @@ export default function PlatformSelector({ platforms, selectedId, onSelect, onCr
             {isOpen && (
                 <div className={styles.dropdown}>
                     {platforms.map((platform) => (
-                        <button
+                        <div
                             key={platform.id}
-                            type="button"
-                            className={`${styles.option} ${platform.id === selectedId ? styles.selected : ""}`}
-                            onClick={() => handleSelect(platform.id)}
+                            className={`${styles.optionWrapper} ${platform.id === selectedId ? styles.selected : ""}`}
                             style={{
                                 borderLeftColor: platform.color,
                                 backgroundColor: platform.id === selectedId
@@ -83,13 +89,28 @@ export default function PlatformSelector({ platforms, selectedId, onSelect, onCr
                                     : `${platform.color}08`
                             }}
                         >
-                            <span
-                                className={styles.colorDot}
-                                style={{ backgroundColor: platform.color }}
-                            />
-                            {platform.isFavorite && <span className={styles.star}>⭐</span>}
-                            <span className={styles.optionText}>{platform.name}</span>
-                        </button>
+                            <button
+                                type="button"
+                                className={styles.option}
+                                onClick={() => handleSelect(platform.id)}
+                            >
+                                <span
+                                    className={styles.colorDot}
+                                    style={{ backgroundColor: platform.color }}
+                                />
+                                <span className={styles.optionText}>{platform.name}</span>
+                            </button>
+                            {onToggleFavorite && (
+                                <button
+                                    type="button"
+                                    className={styles.favoriteToggle}
+                                    onClick={(e) => handleToggleFavorite(e, platform.id)}
+                                    title={platform.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+                                >
+                                    {platform.isFavorite ? "⭐" : "☆"}
+                                </button>
+                            )}
+                        </div>
                     ))}
                     <button
                         type="button"
