@@ -2,9 +2,16 @@
 // Tests de composant pour DividendsChart
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '../../../../test/test-utils';
+import { render, screen } from '@testing-library/react';
 import DividendsChart from './DividendsChart';
 import type { CrowdfundingProject } from '../hooks/useCrowdfunding';
+
+// Mock platform colors for tests
+const mockPlatformColors: Record<string, string> = {
+    "Bricks": "#f59e0b",
+    "Bienpreter": "#8b5cf6",
+    "Anaxago": "#10b981",
+};
 
 /**
  * EXPLICATION DES TESTS DE COMPOSANTS :
@@ -85,6 +92,7 @@ describe('DividendsChart', () => {
             <DividendsChart
                 projects={mockProjects}
                 period="month"
+                platformColors={mockPlatformColors}
             />
         );
 
@@ -99,6 +107,7 @@ describe('DividendsChart', () => {
             <DividendsChart
                 projects={[]}
                 period="month"
+                platformColors={mockPlatformColors}
             />
         );
 
@@ -111,6 +120,7 @@ describe('DividendsChart', () => {
             <DividendsChart
                 projects={mockProjects}
                 period="month"
+                platformColors={mockPlatformColors}
             />
         );
 
@@ -124,20 +134,22 @@ describe('DividendsChart', () => {
 
     it('devrait changer le titre selon la période sélectionnée', () => {
         // Test avec période "quarter"
-        const { rerender } = render(
+        render(
             <DividendsChart
                 projects={mockProjects}
                 period="quarter"
+                platformColors={mockPlatformColors}
             />
         );
 
         expect(screen.getByText(/par trimestre/i)).toBeInTheDocument();
 
         // Rerender avec période "year"
-        rerender(
+        render(
             <DividendsChart
                 projects={mockProjects}
                 period="year"
+                platformColors={mockPlatformColors}
             />
         );
 
@@ -150,8 +162,9 @@ describe('DividendsChart', () => {
             <DividendsChart
                 projects={mockProjects}
                 period="month"
-                startDate="2024-02-15"
-                endDate="2024-03-31"
+                startDate="2024-01-01"
+                endDate="2024-06-30"
+                platformColors={mockPlatformColors}
             />
         );
 
