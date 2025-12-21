@@ -90,11 +90,14 @@ input:focus {
 .platformSelectWrapper {
     display: flex;
     gap: 0.5rem;
-    align-items: center;
+    align-items: stretch;
+    width: 100%;
 }
 
 .platformSelect {
     flex: 1;
+    min-width: 0;
+    /* Allow flex item to shrink */
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -114,22 +117,45 @@ input:focus {
 .platformSelect option {
     background: #1a1d24;
     color: #fff;
+    padding: 0.5rem;
+}
+
+/* Color indicator */
+.colorIndicator {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+}
+
+.colorIndicator:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .favoriteBtn {
+    flex-shrink: 0;
+    /* Prevent button from shrinking */
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.2s;
     line-height: 1;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .favoriteBtn:hover {
     background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 /* New platform input */

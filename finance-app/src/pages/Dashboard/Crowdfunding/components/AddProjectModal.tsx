@@ -137,14 +137,23 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                                         <option value="__new__">➕ Créer une nouvelle plateforme</option>
                                     </select>
                                     {platformId && (
-                                        <button
-                                            type="button"
-                                            className={styles.favoriteBtn}
-                                            onClick={() => toggleFavorite(platformId)}
-                                            title="Ajouter aux favoris"
-                                        >
-                                            {platforms.find((p: Platform) => p.id === platformId)?.isFavorite ? "⭐" : "☆"}
-                                        </button>
+                                        <>
+                                            <div
+                                                className={styles.colorIndicator}
+                                                style={{
+                                                    backgroundColor: platforms.find((p: Platform) => p.id === platformId)?.color || '#6b7280'
+                                                }}
+                                                title={`Couleur: ${platforms.find((p: Platform) => p.id === platformId)?.color}`}
+                                            />
+                                            <button
+                                                type="button"
+                                                className={styles.favoriteBtn}
+                                                onClick={() => toggleFavorite(platformId)}
+                                                title="Ajouter aux favoris"
+                                            >
+                                                {platforms.find((p: Platform) => p.id === platformId)?.isFavorite ? "⭐" : "☆"}
+                                            </button>
+                                        </>
                                     )}
                                 </div>
                             ) : (
