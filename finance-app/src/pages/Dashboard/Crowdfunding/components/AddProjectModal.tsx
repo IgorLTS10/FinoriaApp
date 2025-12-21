@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./AddProjectModal.module.css";
 import type { NewProjectPayload } from "../hooks/useCrowdfunding";
+import { usePlatforms } from "../hooks/usePlatforms";
 
 type Props = {
     open: boolean;
@@ -11,7 +12,7 @@ type Props = {
 
 export default function AddProjectModal({ open, onClose, onSubmit, userId }: Props) {
     const [name, setName] = useState("");
-    const [platform, setPlatform] = useState("");
+    const [platformId, setPlatformId] = useState("");
     const [amount, setAmount] = useState("");
     const [yieldPercent, setYieldPercent] = useState("");
     const [startDate, setStartDate] = useState("");
@@ -22,14 +23,47 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Platform management
+    const { platforms, loading: loadingPlatforms, createPlatform, toggleFavorite } = usePlatforms(userId);
+    const [showNewPlatformInput, setShowNewPlatformInput] = useState(false);
+    const [newPlatformName, setNewPlatformName] = useState("");
+    const [creatingPlatform, setCreatingPlatform] = useState(false);
+
     if (!open) return null;
+
+    async function handleCreatePlatform() {
+        if (!newPlatformName.trim()) {
+            setError("Veuillez entrer un nom de plateforme");
+            return;
+        }
+
+        try {
+            setCreatingPlatform(true);
+            setError(null);
+            const newPlatform = await createPlatform(newPlatformName.trim());
+            setPlatformId(newPlatform.id);
+            setNewPlatformName("");
+            setShowNewPlatformInput(false);
+        } catch (err: any) {
+            setError(err.message || "Erreur lors de la création de la plateforme");
+        } finally {
+            setCreatingPlatform(false);
+        }
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
 
-        if (!name || !platform || !amount || !startDate || !duration) {
+        if (!name || !platformId || !amount || !startDate || !duration) {
             setError("Merci de remplir les champs obligatoires (*)");
+            return;
+        }
+
+        // Find platform name from ID
+        const selectedPlatform = platforms.find(p => p.id === platformId);
+        if (!selectedPlatform) {
+            setError("Plateforme invalide");
             return;
         }
 
@@ -38,7 +72,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
             await onSubmit({
                 userId,
                 name,
-                platform,
+                platform: selectedPlatform.name, // Still send name for now (backend will be updated later)
                 amountInvested: Number(amount),
                 yieldPercent: Number(yieldPercent || 0),
                 startDate,
@@ -49,7 +83,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
             onClose();
             // Reset form
             setName("");
-            setPlatform("");
+            setPlatformId("");
             setAmount("");
             setYieldPercent("");
             setStartDate("");
@@ -80,11 +114,68 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                         </label>
                         <label>
                             Plateforme *
-                            <input
-                                value={platform}
-                                onChange={(e) => setPlatform(e.target.value)}
-                                placeholder="Ex: Bricks, Bienpreter"
-                            />
+                            {!showNewPlatformInput ? (
+                                <div className={styles.platformSelectWrapper}>
+                                    <select
+                                        value={platformId}
+                                        onChange={(e) => {
+                                            if (e.target.value === "__new__") {
+                                                setShowNewPlatformInput(true);
+                                            } else {
+                                                setPlatformId(e.target.value);
+                                            }
+                                        }}
+                                        disabled={loadingPlatforms}
+                                        className={styles.platformSelect}
+                                    >
+                                        <option value="">Sélectionner une plateforme</option>
+                                        {platforms.map((platform) => (
+                                            <option key={platform.id} value={platform.id}>
+                                                {platform.isFavorite ? "⭐ " : ""}{platform.name}
+                                            </option>
+                                        ))}
+                                        <option value="__new__">➕ Créer une nouvelle plateforme</option>
+                                    </select>
+                                    {platformId && (
+                                        <button
+                                            type="button"
+                                            className={styles.favoriteBtn}
+                                            onClick={() => toggleFavorite(platformId)}
+                                            title="Ajouter aux favoris"
+                                        >
+                                            {platforms.find(p => p.id === platformId)?.isFavorite ? "⭐" : "☆"}
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className={styles.newPlatformInput}>
+                                    <input
+                                        value={newPlatformName}
+                                        onChange={(e) => setNewPlatformName(e.target.value)}
+                                        placeholder="Nom de la nouvelle plateforme"
+                                        disabled={creatingPlatform}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleCreatePlatform}
+                                        disabled={creatingPlatform}
+                                        className={styles.createBtn}
+                                    >
+                                        {creatingPlatform ? "..." : "✓"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowNewPlatformInput(false);
+                                            setNewPlatformName("");
+                                        }}
+                                        disabled={creatingPlatform}
+                                        className={styles.cancelBtn}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
                         </label>
                     </div>
 

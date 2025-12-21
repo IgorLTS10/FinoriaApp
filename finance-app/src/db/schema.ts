@@ -130,3 +130,19 @@ export const crowdfundingTransactions = pgTable("crowdfunding_transactions", {
   date: date("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Crowdfunding platforms (shared across all users)
+export const crowdfundingPlatforms = pgTable("crowdfunding_platforms", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  color: text("color").notNull(), // Hex color code
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: uuid("created_by"), // Optional: track who created it
+});
+
+// User platform favorites
+export const userPlatformFavorites = pgTable("user_platform_favorites", {
+  userId: uuid("user_id").notNull(),
+  platformId: uuid("platform_id").references(() => crowdfundingPlatforms.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
