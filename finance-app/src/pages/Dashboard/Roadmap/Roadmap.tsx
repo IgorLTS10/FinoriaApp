@@ -17,95 +17,87 @@ const roadmapColumns: {
   key: "active" | "planned" | "idea";
   items: RoadmapItem[];
 }[] = [
-  {
-    title: "En cours",
-    key: "active",
-    items: [
-      {
-        title: "Rafraichissement de la page Métaux",
-        label: "Technical Features",
-        quarter: "Q4 2025",
-        status: "active",
-        description:
-          "Après ajout ou suppression d’un métal, la page se met à jour automatiquement pour refléter les changements. Ajout des taux FX en temps réel pour conversions précises. Ajout des cours des métaux en quasi direct.",
-      },
-      {
-        title: "Modification du mot de passe",
-        label: "UX",
-        quarter: "Q4 2025",
-        status: "active",
-        description:
-          "Possibilité de changer son mot de passe directement depuis le dashboard utilisateur.",
-      },
-      {
-        title: "Possibilité de connexion avec Google",
-        label: "UX",
-        quarter: "Q4 2025",
-        status: "active",
-        description:
-          "Ajout de l’option de connexion via un compte Google pour simplifier l’accès au dashboard.",
-      }
-    ],
-  },
-  {
-    title: "À venir",
-    key: "planned",
-    items: [
-      {
-        title: "Rapports d’investissement",
-        label: "Invest",
-        quarter: "Q1 2026",
-        status: "planned",
-        description:
-          "Vue consolidée des performances (ETF, actions, crowdfunding, métaux, crypto…).",
-      },
-      {
-        title: "Crowdfunding",
-        label: "Diversification",
-        quarter: "2026",
-        status: "planned",
-        description:
-          "Intégration des plateformes de crowdfunding immobilier et d’entreprise.",
-      },
-      {
-        title: "Suivi des cryptomonnaies",
-        label: "Diversification",
-        quarter: "2026",
-        status: "planned",
-        description:
-          "Ajout des portefeuilles crypto pour un suivi global des investissements.",
-      },
-      {
-        title: "Actions",
-        label: "Diversification",
-        quarter: "2026",
-        status: "planned",
-        description:
-          "Ajout d'une liste d'actions pour suivre et analyser ses investissements en bourse.",
-      },
-      {
-        title: "ETF",
-        label: "Diversification",
-        quarter: "2026",
-        status: "planned",
-        description:
-          "Ajout d'une liste d'ETF pour suivre et analyser ses investissements en fonds indiciels.",
-      },
-      {
-        title: "Immobilier SCPI",
-        label: "Diversification",
-        quarter: "2026",
-        status: "planned",
-        description:
-          "Ajout du suivi des investissements en SCPI pour une vision complète de son patrimoine immobilier.",
-      },
-      {
-        title: "Paramètres",
-        label: "UX",
-        quarter: "Q1 2026",
-        status: "planned",
-        description:
-          "Personnalisation des devises par défaut, préférences d’affichage et gestion du compte utilisateur.",
+    {
+      title: "En cours",
+      key: "active",
+      items: [
+        {
+          title: "Suivi des cryptomonnaies",
+          label: "Diversification",
+          quarter: "2026",
+          status: "planned",
+          description:
+            "Ajout des portefeuilles crypto pour un suivi global des investissements.",
+        },
+        {
+          title: "Paramètres",
+          label: "UX",
+          quarter: "Q1 2026",
+          status: "planned",
+          description:
+            "Personnalisation des devises par défaut, préférences d’affichage et gestion du compte utilisateur.",
+        },
+        {
+          title: "Modification du mot de passe",
+          label: "UX",
+          quarter: "Q1 2026",
+          status: "active",
+          description:
+            "Possibilité de changer son mot de passe directement depuis le dashboard utilisateur.",
+        },
+        {
+          title: "Possibilité de connexion avec Google",
+          label: "UX",
+          quarter: "Q1 2026",
+          status: "active",
+          description:
+            "Ajout de l’option de connexion via un compte Google pour simplifier l’accès au dashboard.",
+        }
+      ],
+    },
+    {
+      title: "À venir",
+      key: "planned",
+      items: [
+        {
+          title: "Rapports d’investissement",
+          label: "Invest",
+          quarter: "Q1 2026",
+          status: "planned",
+          description:
+            "Vue consolidée des performances (ETF, actions, crowdfunding, métaux, crypto…).",
+        },
+        {
+          title: "Rafraichissement de la page Métaux",
+          label: "Technical Features",
+          quarter: "Q1 2026",
+          status: "active",
+          description:
+            "Après ajout ou suppression d’un métal, la page se met à jour automatiquement pour refléter les changements. Ajout des taux FX en temps réel pour conversions précises. Ajout des cours des métaux en quasi direct.",
+        },
+        {
+          title: "Actions",
+          label: "Diversification",
+          quarter: "2026",
+          status: "planned",
+          description:
+            "Ajout d'une liste d'actions pour suivre et analyser ses investissements en bourse.",
+        },
+        {
+          title: "ETF",
+          label: "Diversification",
+          quarter: "2026",
+          status: "planned",
+          description:
+            "Ajout d'une liste d'ETF pour suivre et analyser ses investissements en fonds indiciels.",
+        },
+        {
+          title: "Immobilier SCPI",
+          label: "Diversification",
+          quarter: "2026",
+          status: "planned",
+          description:
+            "Ajout du suivi des investissements en SCPI pour une vision complète de son patrimoine immobilier.",
         },
         {
           title: "Import / Export des données",
@@ -123,31 +115,31 @@ const roadmapColumns: {
           description:
             "Choix des sections à afficher sur le tableau de bord pour une expérience utilisateur adaptée.",
         }
-    ],
-  },
-  {
-    title: "Idées & explorations",
-    key: "idea",
-    items: [
-      {
-        title: "Mode coaching financier",
-        label: "Expérimental",
-        quarter: "Backlog",
-        status: "idea",
-        description:
-          "Scénarios d’épargne, recommandations d’allocation et objectifs personnalisés.",
-      },
-      {
-        title: "App mobile dédiée",
-        label: "Mobile",
-        quarter: "Backlog",
-        status: "idea",
-        description:
-          "Version iOS/Android avec notifications pour les dépenses, objectifs et alertes.",
-      },
-    ],
-  },
-];
+      ],
+    },
+    {
+      title: "Idées & explorations",
+      key: "idea",
+      items: [
+        {
+          title: "Mode coaching financier",
+          label: "Expérimental",
+          quarter: "Backlog",
+          status: "idea",
+          description:
+            "Scénarios d’épargne, recommandations d’allocation et objectifs personnalisés.",
+        },
+        {
+          title: "App mobile dédiée",
+          label: "Mobile",
+          quarter: "Backlog",
+          status: "idea",
+          description:
+            "Version iOS/Android avec notifications pour les dépenses, objectifs et alertes.",
+        },
+      ],
+    },
+  ];
 
 export default function Roadmap() {
   const user = useUser();
@@ -176,7 +168,7 @@ export default function Roadmap() {
       <section className={styles.meta}>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Dernière mise à jour</div>
-          <div className={styles.metaValue}>13 Novembre 2025</div>
+          <div className={styles.metaValue}>23 Décembre 2025</div>
         </div>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Objectif</div>
@@ -200,13 +192,12 @@ export default function Roadmap() {
                   <div className={styles.cardHeader}>
                     <span className={styles.cardLabel}>{item.label}</span>
                     <span
-                      className={`${styles.cardStatus} ${
-                        item.status === "active"
-                          ? styles.statusActive
-                          : item.status === "planned"
+                      className={`${styles.cardStatus} ${item.status === "active"
+                        ? styles.statusActive
+                        : item.status === "planned"
                           ? styles.statusPlanned
                           : styles.statusIdea
-                      }`}
+                        }`}
                     >
                       {item.quarter}
                     </span>
