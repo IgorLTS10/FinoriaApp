@@ -67,24 +67,32 @@ export async function handleCrowdfundingProjects(req: VercelRequest, res: Vercel
             const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
             const { userId, name, platform, amountInvested, yieldPercent, startDate, durationMonths, imageUrl, contractUrl } = body;
 
+            // Debug logging
+            console.log("Received body:", JSON.stringify(body));
+            console.log("imageUrl:", imageUrl, "contractUrl:", contractUrl);
+
             if (!userId || !name || !platform || !amountInvested || !startDate || !durationMonths) {
                 return res.status(400).json({ error: "Champs obligatoires manquants" });
             }
 
+            const insertValues = {
+                userId,
+                name,
+                platform,
+                amountInvested: String(amountInvested),
+                yieldPercent: String(yieldPercent || 0),
+                startDate,
+                durationMonths: Number(durationMonths),
+                status: "active" as const,
+                imageUrl: imageUrl || null,
+                contractUrl: contractUrl || null,
+            };
+
+            console.log("Insert values:", JSON.stringify(insertValues));
+
             const [inserted] = await db
                 .insert(crowdfundingProjects)
-                .values({
-                    userId,
-                    name,
-                    platform,
-                    amountInvested: String(amountInvested),
-                    yieldPercent: String(yieldPercent || 0),
-                    startDate,
-                    durationMonths: Number(durationMonths),
-                    imageUrl: imageUrl || null,
-                    contractUrl: contractUrl || null,
-                    status: "active",
-                })
+                .values(insertValues)
                 .returning();
 
             return res.status(200).json({ success: true, project: inserted });
