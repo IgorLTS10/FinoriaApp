@@ -9,6 +9,7 @@ type Props = {
     userId: string;
     onUpdateProject: (id: string, userId: string, updates: any) => Promise<void>;
     onDeleteTransaction: (id: string) => Promise<void>;
+    onDeleteProject: (id: string, userId: string) => Promise<any>;
     onAddTransaction: () => void;
 };
 
@@ -19,6 +20,7 @@ export default function ProjectDetailsModal({
     userId,
     onUpdateProject,
     onDeleteTransaction,
+    onDeleteProject,
     onAddTransaction,
 }: Props) {
     const [editing, setEditing] = useState(false);
@@ -46,6 +48,27 @@ export default function ProjectDetailsModal({
         if (!confirm("Supprimer cette transaction ?")) return;
         try {
             await onDeleteTransaction(txId);
+        } catch (err: any) {
+            alert(err.message);
+        }
+    };
+
+    const handleDeleteProject = async () => {
+        const transactionCount = project.transactions.length;
+
+        // First confirmation
+        let confirmMessage = `Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?`;
+        if (!confirm(confirmMessage)) return;
+
+        // Second confirmation if transactions exist
+        if (transactionCount > 0) {
+            const txMessage = `⚠️ ATTENTION : Ce projet contient ${transactionCount} transaction${transactionCount > 1 ? 's' : ''}.\n\nLa suppression du projet supprimera également toutes les transactions associées.\n\nVoulez-vous vraiment continuer ?`;
+            if (!confirm(txMessage)) return;
+        }
+
+        try {
+            await onDeleteProject(project.id, userId);
+            onClose();
         } catch (err: any) {
             alert(err.message);
         }
@@ -221,6 +244,13 @@ export default function ProjectDetailsModal({
                             <strong>{project.refunded.toLocaleString("fr-FR")} €</strong>
                         </div>
                     </div>
+                </div>
+
+                {/* Delete Project Button */}
+                <div className={styles.dangerZone}>
+                    <button onClick={handleDeleteProject} className={styles.deleteProjectBtn}>
+                        🗑️ Supprimer le projet
+                    </button>
                 </div>
             </div>
         </div>

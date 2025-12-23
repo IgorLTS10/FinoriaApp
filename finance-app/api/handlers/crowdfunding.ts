@@ -143,6 +143,46 @@ export async function handleCrowdfundingProjects(req: VercelRequest, res: Vercel
             return res.status(200).json({ success: true, project: updated });
         }
 
+        if (req.method === "DELETE") {
+            const { id, userId } = req.query;
+
+            if (!id || !userId) {
+                return res.status(400).json({ error: "id et userId sont obligatoires" });
+            }
+
+            // Check if project exists and belongs to user
+            const [project] = await db
+                .select()
+                .from(crowdfundingProjects)
+                .where(eq(crowdfundingProjects.id, id as string))
+                .limit(1);
+
+            if (!project) {
+                return res.status(404).json({ error: "Projet introuvable" });
+            }
+
+            if (project.userId !== userId) {
+                return res.status(403).json({ error: "Non autorisé" });
+            }
+
+            // Check for transactions
+            const transactions = await db
+                .select()
+                .from(crowdfundingTransactions)
+                .where(eq(crowdfundingTransactions.projectId, id as string));
+
+            // Delete project (transactions will be cascade deleted due to foreign key)
+            await db
+                .delete(crowdfundingProjects)
+                .where(eq(crowdfundingProjects.id, id as string));
+
+            return res.status(200).json({
+                success: true,
+                deletedProject: project,
+                transactionsDeleted: transactions.length
+            });
+        }
+
         return res.status(405).json({ error: "Method not allowed" });
     } catch (err: any) {
         console.error("Error in crowdfunding/projects:", err);

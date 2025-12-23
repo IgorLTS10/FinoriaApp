@@ -17,7 +17,7 @@ export default function Crowdfunding() {
     const user = useUser();
     const userId = (user as any)?.id as string | undefined;
 
-    const { projects, loading, error, addProject, addTransaction, updateProject, deleteTransaction } = useCrowdfunding(userId);
+    const { projects, loading, error, addProject, addTransaction, updateProject, deleteTransaction, deleteProject } = useCrowdfunding(userId);
 
     // Fetch platforms for dynamic colors
     const { platforms } = usePlatforms(userId);
@@ -590,6 +590,7 @@ export default function Crowdfunding() {
                             userId={userId}
                             onUpdateProject={updateProject}
                             onDeleteTransaction={deleteTransaction}
+                            onDeleteProject={deleteProject}
                             onAddTransaction={() => {
                                 setTransactionModal({ open: true, projectId: detailsModal.id, projectName: detailsModal.name });
                                 setDetailsModal(null);

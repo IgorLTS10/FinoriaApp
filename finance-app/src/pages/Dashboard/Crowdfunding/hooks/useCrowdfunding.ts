@@ -108,6 +108,16 @@ export function useCrowdfunding(userId?: string) {
         }
     };
 
+    const deleteProject = async (id: string, userId: string) => {
+        try {
+            const res = await axios.delete(`/api/crowdfunding/projects?id=${id}&userId=${userId}`);
+            await fetchProjects();
+            return res.data; // Returns { success, deletedProject, transactionsDeleted }
+        } catch (err: any) {
+            throw new Error(err.response?.data?.error || err.message);
+        }
+    };
+
     const updateProject = async (id: string, userId: string, updates: any) => {
         try {
             await axios.patch("/api/crowdfunding/projects", { id, userId, ...updates });
@@ -133,6 +143,7 @@ export function useCrowdfunding(userId?: string) {
         addProject,
         addTransaction,
         deleteTransaction,
+        deleteProject,
         updateProject,
         updateTransaction,
         refresh: fetchProjects,
