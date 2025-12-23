@@ -290,22 +290,10 @@ export default function DividendsChart({ projects, period, startDate, endDate, p
                         dataKey="invested"
                         stroke="#fbbf24"
                         strokeWidth={3}
-                        dot={{ fill: "#fbbf24", r: 5, strokeWidth: 2, stroke: "#fff" }}
-                        activeDot={{ r: 7, strokeWidth: 2, stroke: "#fff" }}
+                        dot={{ fill: "#fbbf24", r: 4 }}
                         name="Investi"
                         yAxisId="right"
-                        filter="url(#glow)"
                     />
-                    {/* SVG filter for glow effect */}
-                    <defs>
-                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
-                    </defs>
                 </ComposedChart>
             </ResponsiveContainer>
         </div>

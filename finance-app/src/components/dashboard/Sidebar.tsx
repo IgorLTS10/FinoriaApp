@@ -41,6 +41,7 @@ export default function Sidebar() {
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Aperçu
+          <span className={styles.statusDot} data-status="red"></span>
         </NavLink>
       </div>
 
@@ -51,36 +52,42 @@ export default function Sidebar() {
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Métaux
+          <span className={styles.statusDot} data-status="orange"></span>
         </NavLink>
         <NavLink
           to="/dashboard/crowdfunding"
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Crowdfunding
+          <span className={styles.statusDot} data-status="green"></span>
         </NavLink>
         <NavLink
           to="/dashboard/actions"
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Actions
+          <span className={styles.statusDot} data-status="orange"></span>
         </NavLink>
         <NavLink
           to="/dashboard/etf"
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           ETF
+          <span className={styles.statusDot} data-status="red"></span>
         </NavLink>
         <NavLink
           to="/dashboard/crypto"
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Crypto
+          <span className={styles.statusDot} data-status="orange"></span>
         </NavLink>
         <NavLink
           to="/dashboard/immobilier"
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Immobilier (SCPI)
+          <span className={styles.statusDot} data-status="red"></span>
         </NavLink>
       </div>
 
@@ -93,6 +100,7 @@ export default function Sidebar() {
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Roadmap
+          <span className={styles.statusDot} data-status="green"></span>
         </NavLink>
 
         <NavLink
@@ -100,6 +108,7 @@ export default function Sidebar() {
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Paramètres
+          <span className={styles.statusDot} data-status="orange"></span>
         </NavLink>
 
         {/* Déconnexion (rouge) */}
