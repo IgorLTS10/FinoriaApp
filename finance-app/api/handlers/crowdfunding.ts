@@ -75,10 +75,23 @@ export async function handleCrowdfundingProjects(req: VercelRequest, res: Vercel
                 return res.status(400).json({ error: "Champs obligatoires manquants" });
             }
 
+            // Fetch platform name from platformId for backward compatibility
+            const { crowdfundingPlatforms } = await import("../../src/db/schema.js");
+            const [platform] = await db
+                .select()
+                .from(crowdfundingPlatforms)
+                .where(eq(crowdfundingPlatforms.id, platformId))
+                .limit(1);
+
+            if (!platform) {
+                return res.status(400).json({ error: "Plateforme introuvable" });
+            }
+
             const insertValues = {
                 userId,
                 name,
-                platformId, // Use platformId instead of platform
+                platform: platform.name, // Send platform name for backward compatibility
+                platformId, // Also send platformId for new schema
                 amountInvested: String(amountInvested),
                 yieldPercent: String(yieldPercent || 0),
                 startDate,
