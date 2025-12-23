@@ -290,7 +290,7 @@ export default function DividendsChart({ projects, period, startDate, endDate, p
                         dataKey="invested"
                         stroke="#fbbf24"
                         strokeWidth={3}
-                        dot={{ fill: "#fbbf24", r: 4 }}
+                        dot={{ fill: "#fbbf24", r: 4, stroke: "#fff", strokeWidth: 2, filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))" }}
                         name="Investi"
                         yAxisId="right"
                     />
