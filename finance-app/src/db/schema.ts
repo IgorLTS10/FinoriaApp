@@ -111,7 +111,8 @@ export const crowdfundingProjects = pgTable("crowdfunding_projects", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
   name: text("name").notNull(),
-  platform: text("platform").notNull(), // Bricks, Bienpreter...
+  platform: text("platform"), // Legacy field - nullable for backward compatibility
+  platformId: uuid("platform_id").references(() => crowdfundingPlatforms.id).notNull(),
   amountInvested: numeric("amount_invested", { precision: 12, scale: 2 }).notNull(),
   yieldPercent: numeric("yield_percent", { precision: 5, scale: 2 }).notNull(),
   startDate: date("start_date").notNull(),
