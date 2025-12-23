@@ -52,7 +52,7 @@ export default function Sidebar() {
           className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
         >
           Métaux
-          <span className={styles.statusDot} data-status="orange"></span>
+          <span className={styles.statusDot} data-status="green"></span>
         </NavLink>
         <NavLink
           to="/dashboard/crowdfunding"
