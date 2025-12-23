@@ -75,7 +75,13 @@ export function useCrowdfunding(userId?: string) {
 
     const addProject = async (payload: NewProjectPayload) => {
         try {
-            const res = await axios.post("/api/crowdfunding/projects", payload);
+            // Ensure imageUrl and contractUrl are always present in the payload
+            const completePayload = {
+                ...payload,
+                imageUrl: payload.imageUrl || "",
+                contractUrl: payload.contractUrl || "",
+            };
+            const res = await axios.post("/api/crowdfunding/projects", completePayload);
             // On recharge tout pour avoir l'état frais (ou on pourrait append manuellement)
             await fetchProjects();
             return res.data.project;
