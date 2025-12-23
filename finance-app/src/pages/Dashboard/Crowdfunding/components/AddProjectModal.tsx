@@ -71,7 +71,7 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
             await onSubmit({
                 userId,
                 name,
-                platform: selectedPlatform.name, // Still send name for now (backend will be updated later)
+                platformId, // Send platform ID instead of name
                 amountInvested: Number(amount),
                 yieldPercent: Number(yieldPercent || 0),
                 startDate,

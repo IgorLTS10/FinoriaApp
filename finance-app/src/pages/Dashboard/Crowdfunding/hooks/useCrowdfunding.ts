@@ -33,7 +33,7 @@ export type CrowdfundingProject = {
 export type NewProjectPayload = {
     userId: string;
     name: string;
-    platform: string;
+    platformId: string; // Changed from platform to platformId
     amountInvested: number;
     yieldPercent: number;
     startDate: string;

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import styles from "./BulkImportModal.module.css";
 import type { NewProjectPayload } from "../hooks/useCrowdfunding";
+import { usePlatforms } from "../hooks/usePlatforms";
 
 type Props = {
     open: boolean;
@@ -22,6 +23,7 @@ type ParsedProject = {
     data: NewProjectPayload;
     errors: string[];
     rowNumber: number;
+    platformName?: string; // For display purposes
 };
 
 export default function BulkImportModal({ open, onClose, onImport, userId }: Props) {
@@ -31,6 +33,9 @@ export default function BulkImportModal({ open, onClose, onImport, userId }: Pro
     const [importComplete, setImportComplete] = useState(false);
     const [importResults, setImportResults] = useState<{ success: number; failed: number }>({ success: 0, failed: 0 });
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Fetch platforms
+    const { platforms } = usePlatforms(userId);
 
     if (!open) return null;
 
@@ -55,6 +60,13 @@ Projet Example 2,Homunity,5000,7.2,2024-02-01,18`;
         if (!row.montant_investi?.trim()) errors.push("Montant investi manquant");
         if (!row.date_debut?.trim()) errors.push("Date de début manquante");
         if (!row.duree_mois?.trim()) errors.push("Durée manquante");
+
+        // Find platform by name
+        const platformName = row.plateforme?.trim() || "";
+        const platform = platforms.find(p => p.name.toLowerCase() === platformName.toLowerCase());
+        if (platformName && !platform) {
+            errors.push(`Plateforme "${platformName}" introuvable`);
+        }
 
         // Validate number formats
         const amount = parseFloat(row.montant_investi);
@@ -82,7 +94,7 @@ Projet Example 2,Homunity,5000,7.2,2024-02-01,18`;
             data: {
                 userId,
                 name: row.nom?.trim() || "",
-                platform: row.plateforme?.trim() || "",
+                platformId: platform?.id || "", // Use platform ID
                 amountInvested: amount || 0,
                 yieldPercent: yieldPercent || 0,
                 startDate: row.date_debut?.trim() || "",
@@ -90,6 +102,7 @@ Projet Example 2,Homunity,5000,7.2,2024-02-01,18`;
             },
             errors,
             rowNumber,
+            platformName, // Store for display
         };
     };
 
@@ -269,7 +282,7 @@ Projet Example 2,Homunity,5000,7.2,2024-02-01,18`;
                                                     <tr key={index} className={project.errors.length > 0 ? styles.errorRow : styles.validRow}>
                                                         <td>{project.rowNumber}</td>
                                                         <td>{project.data.name}</td>
-                                                        <td>{project.data.platform}</td>
+                                                        <td>{project.platformName || "N/A"}</td>
                                                         <td>{project.data.amountInvested.toLocaleString("fr-FR")} €</td>
                                                         <td>{project.data.yieldPercent}%</td>
                                                         <td>{project.data.startDate}</td>

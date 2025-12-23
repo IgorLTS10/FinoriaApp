@@ -65,20 +65,20 @@ export async function handleCrowdfundingProjects(req: VercelRequest, res: Vercel
 
         if (req.method === "POST") {
             const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
-            const { userId, name, platform, amountInvested, yieldPercent, startDate, durationMonths, imageUrl, contractUrl } = body;
+            const { userId, name, platformId, amountInvested, yieldPercent, startDate, durationMonths, imageUrl, contractUrl } = body;
 
             // Debug logging
             console.log("Received body:", JSON.stringify(body));
-            console.log("imageUrl:", imageUrl, "contractUrl:", contractUrl);
+            console.log("platformId:", platformId, "imageUrl:", imageUrl, "contractUrl:", contractUrl);
 
-            if (!userId || !name || !platform || !amountInvested || !startDate || !durationMonths) {
+            if (!userId || !name || !platformId || !amountInvested || !startDate || !durationMonths) {
                 return res.status(400).json({ error: "Champs obligatoires manquants" });
             }
 
             const insertValues = {
                 userId,
                 name,
-                platform,
+                platformId, // Use platformId instead of platform
                 amountInvested: String(amountInvested),
                 yieldPercent: String(yieldPercent || 0),
                 startDate,
