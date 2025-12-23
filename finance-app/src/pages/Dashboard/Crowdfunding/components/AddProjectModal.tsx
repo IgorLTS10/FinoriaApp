@@ -18,6 +18,8 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
     const [yieldPercent, setYieldPercent] = useState("");
     const [startDate, setStartDate] = useState("");
     const [duration, setDuration] = useState("");
+    const [imageUrl, setImageUrl] = useState("");
+    const [contractUrl, setContractUrl] = useState("");
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -76,6 +78,8 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                 yieldPercent: Number(yieldPercent || 0),
                 startDate,
                 durationMonths: Number(duration),
+                imageUrl: imageUrl || undefined,
+                contractUrl: contractUrl || undefined,
             });
             onClose();
             // Reset form
@@ -85,6 +89,8 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
             setYieldPercent("");
             setStartDate("");
             setDuration("");
+            setImageUrl("");
+            setContractUrl("");
         } catch (err: any) {
             setError(err.message || "Erreur lors de l'ajout");
         } finally {
@@ -188,6 +194,28 @@ export default function AddProjectModal({ open, onClose, onSubmit, userId }: Pro
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
                                 placeholder="Ex: 24"
+                            />
+                        </label>
+                    </div>
+
+                    <div className={styles.row}>
+                        <label>
+                            Image URL (optionnel)
+                            <input
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                placeholder="https://..."
+                            />
+                        </label>
+                    </div>
+
+                    <div className={styles.row}>
+                        <label>
+                            Lien contrat (optionnel)
+                            <input
+                                value={contractUrl}
+                                onChange={(e) => setContractUrl(e.target.value)}
+                                placeholder="https://..."
                             />
                         </label>
                     </div>

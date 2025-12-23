@@ -9,7 +9,6 @@ import TransactionsModal from "./components/TransactionsModal";
 import ProjectDetailsModal from "./components/ProjectDetailsModal";
 import DividendsChart from "./components/DividendsChart";
 import BulkDividendModal from "./components/BulkDividendModal";
-import BulkImportModal from "./components/BulkImportModal";
 
 
 
@@ -35,7 +34,6 @@ export default function Crowdfunding() {
 
     const [addProjectOpen, setAddProjectOpen] = useState(false);
     const [bulkDividendOpen, setBulkDividendOpen] = useState(false);
-    const [bulkImportOpen, setBulkImportOpen] = useState(false);
     const [transactionModal, setTransactionModal] = useState<{ open: boolean; projectId: string; projectName: string } | null>(null);
     const [detailsModal, setDetailsModal] = useState<CrowdfundingProject | null>(null);
     const [viewMode, setViewMode] = useState<"cards" | "table">("table"); // Default to table
@@ -212,9 +210,6 @@ export default function Crowdfunding() {
                     </button>
                     <button className={styles.bulkButton} onClick={() => setBulkDividendOpen(true)}>
                         📊 Dividendes en masse
-                    </button>
-                    <button className={styles.bulkButton} onClick={() => setBulkImportOpen(true)}>
-                        📥 Importer des projets
                     </button>
                 </div>
             </div>
@@ -613,16 +608,6 @@ export default function Crowdfunding() {
                         });
                     }
                 }}
-            />
-            <BulkImportModal
-                open={bulkImportOpen}
-                onClose={() => setBulkImportOpen(false)}
-                onImport={async (projects) => {
-                    for (const project of projects) {
-                        await addProject(project);
-                    }
-                }}
-                userId={userId!}
             />
         </div>
     );

@@ -78,8 +78,8 @@ export function useCrowdfunding(userId?: string) {
             // Ensure imageUrl and contractUrl are always present in the payload
             const completePayload = {
                 ...payload,
-                imageUrl: payload.imageUrl || "",
-                contractUrl: payload.contractUrl || "",
+                imageUrl: payload.imageUrl || null,
+                contractUrl: payload.contractUrl || null,
             };
             const res = await axios.post("/api/crowdfunding/projects", completePayload);
             // On recharge tout pour avoir l'état frais (ou on pourrait append manuellement)
