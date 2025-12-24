@@ -111,7 +111,7 @@ function getAllMondays(startDate: Date, endDate: Date): string[] {
     return mondays;
 }
 
-// GET /api/metaux/portfolio-history?userId=xxx
+// GET /api/metaux/portfolio-history?userId=xxx&metalType=or
 export async function handleMetalPortfolioHistory(req: VercelRequest, res: VercelResponse) {
     try {
         if (req.method !== "GET") {
@@ -119,15 +119,22 @@ export async function handleMetalPortfolioHistory(req: VercelRequest, res: Verce
         }
 
         const userId = req.query.userId as string | undefined;
+        const metalType = req.query.metalType as string | undefined;
+
         if (!userId) {
             return res.status(400).json({ error: "userId est obligatoire" });
         }
 
         // Récupérer tous les achats de l'utilisateur
-        const purchases = await db
+        let purchases = await db
             .select()
             .from(metaux)
             .where(eq(metaux.userId, userId));
+
+        // Filtrer par type de métal si spécifié
+        if (metalType) {
+            purchases = purchases.filter((p) => p.type === metalType);
+        }
 
         if (purchases.length === 0) {
             return res.status(200).json({ data: [] });

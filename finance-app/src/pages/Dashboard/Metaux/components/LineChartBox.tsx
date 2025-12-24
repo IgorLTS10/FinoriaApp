@@ -51,7 +51,7 @@ export default function LineChartBox({ selectedMetal }: LineChartBoxProps) {
   const user = useUser();
   const userId = user?.id;
   const { rows } = useMetaux(userId);
-  const { history } = usePortfolioHistory(userId);
+  const { history } = usePortfolioHistory(userId, selectedMetal);
 
   // Filter rows by selected metal type
   const filteredRows = rows?.filter((r) => r.type === selectedMetal) || [];
@@ -97,7 +97,7 @@ export default function LineChartBox({ selectedMetal }: LineChartBoxProps) {
   // 4) Construire les séries cumulées
   let cumInvested = 0;
 
-  const data = allDates.map((d) => {
+  const allData = allDates.map((d) => {
     const delta = investDeltaByDate[d];
     if (delta) {
       cumInvested += delta;
@@ -111,6 +111,9 @@ export default function LineChartBox({ selectedMetal }: LineChartBoxProps) {
       weekly: weeklyValue !== null ? Math.round(weeklyValue) : null,
     };
   });
+
+  // 5) Filtrer pour ne garder que les données où on a investi (pas de valeurs à 0)
+  const data = allData.filter((d) => d.invested > 0);
 
   return (
     <div className={styles.box}>

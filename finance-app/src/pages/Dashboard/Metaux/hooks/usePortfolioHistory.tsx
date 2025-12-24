@@ -6,7 +6,7 @@ export type PortfolioHistoryPoint = {
   valueEur: number; // valeur du portefeuille ce jour-là en EUR
 };
 
-export function usePortfolioHistory(userId?: string) {
+export function usePortfolioHistory(userId?: string, metalType?: string) {
   const [history, setHistory] = useState<PortfolioHistoryPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,8 @@ export function usePortfolioHistory(userId?: string) {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`/api/metaux/portfolio-history?userId=${userId}`);
+        const url = `/api/metaux/portfolio-history?userId=${userId}${metalType ? `&metalType=${metalType}` : ''}`;
+        const res = await fetch(url);
         if (!res.ok) {
           throw new Error("Erreur lors du chargement de l'historique portefeuille");
         }
@@ -45,7 +46,7 @@ export function usePortfolioHistory(userId?: string) {
     return () => {
       ignore = true;
     };
-  }, [userId]);
+  }, [userId, metalType]);
 
   return { history, loading, error };
 }
