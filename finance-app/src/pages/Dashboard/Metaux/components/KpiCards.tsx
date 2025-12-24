@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Metaux/components/KpiCards.tsx
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import styles from "./KpiCards.module.css";
 import { useFx } from "../hooks/useFx";
 import { useUser } from "@stackframe/react";
@@ -28,13 +28,16 @@ function formatWeight(weightG: number) {
   return `${weightG.toFixed(1)} g`;
 }
 
-export default function KpiCards() {
+type KpiCardsProps = {
+  selectedMetal: MetalType;
+  onMetalChange: (metal: MetalType) => void;
+};
+
+export default function KpiCards({ selectedMetal, onMetalChange }: KpiCardsProps) {
   const { displayCurrency, convertForDisplay } = useFx();
   const user = useUser();
   const userId = user?.id;
   const { rows } = useMetaux(userId);
-
-  const [selectedMetal, setSelectedMetal] = useState<MetalType>("or");
 
   const {
     totalInvested,
@@ -139,7 +142,7 @@ export default function KpiCards() {
             <button
               key={m.key}
               type="button"
-              onClick={() => setSelectedMetal(m.key)}
+              onClick={() => onMetalChange(m.key)}
               style={{
                 borderRadius: 999,
                 padding: "3px 9px",

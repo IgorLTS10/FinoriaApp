@@ -15,6 +15,8 @@ import { useUser } from "@stackframe/react";
 import { useMetaux } from "../hooks/useMetaux";
 import { usePortfolioHistory } from "../hooks/usePortfolioHistory";
 
+type MetalType = "or" | "argent" | "platine" | "palladium";
+
 function formatDateLabel(isoDate: string) {
   const d = new Date(isoDate);
   if (Number.isNaN(d.getTime())) return isoDate;
@@ -40,12 +42,19 @@ function CustomTooltip({ active, payload, label, currency }: any) {
   );
 }
 
-export default function LineChartBox() {
+type LineChartBoxProps = {
+  selectedMetal: MetalType;
+};
+
+export default function LineChartBox({ selectedMetal }: LineChartBoxProps) {
   const { convertForDisplay, convert, displayCurrency } = useFx();
   const user = useUser();
   const userId = user?.id;
   const { rows } = useMetaux(userId);
   const { history } = usePortfolioHistory(userId);
+
+  // Filter rows by selected metal type
+  const filteredRows = rows?.filter((r) => r.type === selectedMetal) || [];
 
   if (!rows || rows.length === 0) {
     return (
@@ -59,7 +68,7 @@ export default function LineChartBox() {
   // 1) Montants investis par date d'achat
   const investDeltaByDate: Record<string, number> = {};
 
-  for (const r of rows) {
+  for (const r of filteredRows) {
     const dateKey = r.dateAchat.slice(0, 10);
     const investedValue = convertForDisplay(r.prixAchat, r.deviseAchat);
 

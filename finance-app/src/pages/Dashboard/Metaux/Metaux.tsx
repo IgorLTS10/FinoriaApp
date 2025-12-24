@@ -11,20 +11,26 @@ import AddMetalModal from "./components/AddMetalModal";
 import { useMetaux } from "./hooks/useMetaux";
 import { useState } from "react";
 
+type MetalType = "or" | "argent" | "platine" | "palladium";
+
 export default function Metaux() {
   const user = useUser();
   const userId = (user as any)?.id as string | undefined;
 
   const { rows, loading, error, addMetal, deleteMetal } = useMetaux(userId);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedMetal, setSelectedMetal] = useState<MetalType>("or");
 
   return (
     <div className={styles.page}>
       <HeroCard />
-      <KpiCards />
+      <KpiCards
+        selectedMetal={selectedMetal}
+        onMetalChange={setSelectedMetal}
+      />
 
       <div className={styles.charts}>
-        <LineChartBox />
+        <LineChartBox selectedMetal={selectedMetal} />
         <PieChartBox />
       </div>
 
