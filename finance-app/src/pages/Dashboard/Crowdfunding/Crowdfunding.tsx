@@ -173,11 +173,11 @@ export default function Crowdfunding() {
         }
     };
 
-    // Calculs globaux
-    const totalInvested = (projects || []).reduce((sum, p) => sum + p.amountInvested, 0);
-    const totalReceived = (projects || []).reduce((sum, p) => sum + p.received, 0);
-    const totalRefunded = (projects || []).reduce((sum, p) => sum + p.refunded, 0);
-    const activeProjectsCount = (projects || []).filter(p => p.status === "active").length;
+    // Calculs globaux (basés sur les projets filtrés)
+    const totalInvested = filteredProjects.reduce((sum, p) => sum + p.amountInvested, 0);
+    const totalReceived = filteredProjects.reduce((sum, p) => sum + p.received, 0);
+    const totalRefunded = filteredProjects.reduce((sum, p) => sum + p.refunded, 0);
+    const activeProjectsCount = filteredProjects.filter(p => p.status === "active").length;
 
     // Render sort icon
     const renderSortIcon = (field: typeof sortField) => {
