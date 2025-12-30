@@ -318,6 +318,7 @@ export default function Crowdfunding() {
                             startDate={chartStartDate}
                             endDate={chartEndDate}
                             platformColors={platformColors}
+                            platformFilter={platformFilter}
                         />
                     )}
                 </div>

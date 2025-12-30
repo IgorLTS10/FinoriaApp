@@ -8,6 +8,7 @@ type Props = {
     startDate?: string;
     endDate?: string;
     platformColors: Record<string, string>; // Dynamic platform colors
+    platformFilter?: string; // Filter by platform
 };
 
 
@@ -145,10 +146,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
 };
 
-export default function DividendsChart({ projects, period, startDate, endDate, platformColors }: Props) {
+export default function DividendsChart({ projects, period, startDate, endDate, platformColors, platformFilter }: Props) {
     const getColorForPlatform = (platform: string): string => {
         return platformColors[platform] || "#6b7280";
     };
+
+    // Filter projects by platform if a platform filter is active
+    const filteredProjects = platformFilter && platformFilter !== "all"
+        ? projects.filter(p => p.platform === platformFilter)
+        : projects;
+
     // Grouper les dividendes par période et par plateforme
     const dividendsByPeriod: Record<string, Record<string, number>> = {};
     // Grouper les investissements par période
@@ -158,7 +165,7 @@ export default function DividendsChart({ projects, period, startDate, endDate, p
     const filterStartDate = startDate ? new Date(startDate) : null;
     const filterEndDate = endDate ? new Date(endDate) : null;
 
-    projects.forEach((project) => {
+    filteredProjects.forEach((project) => {
         // Traiter les dividendes
         project.transactions
             .filter((t) => {
@@ -219,7 +226,7 @@ export default function DividendsChart({ projects, period, startDate, endDate, p
         });
 
     // Obtenir toutes les plateformes uniques et les trier par montant total (décroissant)
-    const platformTotals = projects.reduce((acc, p) => {
+    const platformTotals = filteredProjects.reduce((acc, p) => {
         const total = p.transactions
             .filter((t) => t.type === "dividend")
             .reduce((sum, t) => sum + t.amount, 0);
