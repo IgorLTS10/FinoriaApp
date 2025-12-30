@@ -35,7 +35,7 @@ const roadmapColumns: {
           quarter: "Q1 2026",
           status: "planned",
           description:
-            "Personnalisation des devises par défaut, préférences d’affichage et gestion du compte utilisateur.",
+            "Modification de la langue.",
         },
         {
           title: "Possibilité de connexion avec Google",
@@ -160,7 +160,7 @@ export default function Roadmap() {
       <section className={styles.meta}>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Dernière mise à jour</div>
-          <div className={styles.metaValue}>23 Décembre 2025</div>
+          <div className={styles.metaValue}>30 Décembre 2025</div>
         </div>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Objectif</div>
