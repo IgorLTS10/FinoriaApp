@@ -68,6 +68,65 @@ export default function Settings() {
         setImageToCrop(null);
     };
 
+    // Password change state
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [passwordMessage, setPasswordMessage] = useState("");
+    const [isPasswordSaving, setIsPasswordSaving] = useState(false);
+
+    const handlePasswordChange = async () => {
+        setPasswordMessage("");
+
+        // Validation
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            setPasswordMessage("✗ Veuillez remplir tous les champs");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setPasswordMessage("✗ Les mots de passe ne correspondent pas");
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            setPasswordMessage("✗ Le mot de passe doit contenir au moins 8 caractères");
+            return;
+        }
+
+        setIsPasswordSaving(true);
+
+        try {
+            // Update password using Stack Auth API
+            await user?.update({
+                password: newPassword,
+            });
+
+            setPasswordMessage("✓ Mot de passe mis à jour avec succès");
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setIsChangingPassword(false);
+
+            // Clear success message after 3 seconds
+            setTimeout(() => setPasswordMessage(""), 3000);
+        } catch (error: any) {
+            console.error("Error updating password:", error);
+            setPasswordMessage("✗ Erreur lors de la mise à jour du mot de passe");
+        } finally {
+            setIsPasswordSaving(false);
+        }
+    };
+
+    const handleCancelPasswordChange = () => {
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setPasswordMessage("");
+        setIsChangingPassword(false);
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -207,6 +266,87 @@ export default function Settings() {
                                 </div>
                             )}
                         </div>
+                    )}
+                </section>
+            )}
+
+            {/* Password Change Section */}
+            {user && (
+                <section className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h3 className={styles.cardTitle}>Sécurité</h3>
+                        {!isChangingPassword && (
+                            <button
+                                onClick={() => setIsChangingPassword(true)}
+                                className={styles.editButton}
+                            >
+                                🔒 Changer le mot de passe
+                            </button>
+                        )}
+                    </div>
+
+                    {isChangingPassword ? (
+                        <div className={styles.editForm}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Mot de passe actuel</label>
+                                <input
+                                    type="password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    placeholder="Entrez votre mot de passe actuel"
+                                    className={styles.input}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Nouveau mot de passe</label>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Minimum 8 caractères"
+                                    className={styles.input}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Confirmer le nouveau mot de passe</label>
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Retapez le nouveau mot de passe"
+                                    className={styles.input}
+                                />
+                            </div>
+
+                            <div className={styles.formActions}>
+                                <button
+                                    onClick={handlePasswordChange}
+                                    disabled={isPasswordSaving}
+                                    className={styles.saveButton}
+                                >
+                                    {isPasswordSaving ? "Enregistrement..." : "💾 Enregistrer"}
+                                </button>
+                                <button
+                                    onClick={handleCancelPasswordChange}
+                                    disabled={isPasswordSaving}
+                                    className={styles.cancelButton}
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+
+                            {passwordMessage && (
+                                <div className={passwordMessage.includes("✓") ? styles.successMessage : styles.errorMessage}>
+                                    {passwordMessage}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <p className={styles.infoText}>
+                            Cliquez sur "Changer le mot de passe" pour modifier votre mot de passe
+                        </p>
                     )}
                 </section>
             )}

@@ -38,14 +38,6 @@ const roadmapColumns: {
             "Personnalisation des devises par défaut, préférences d’affichage et gestion du compte utilisateur.",
         },
         {
-          title: "Modification du mot de passe",
-          label: "UX",
-          quarter: "Q1 2026",
-          status: "active",
-          description:
-            "Possibilité de changer son mot de passe directement depuis le dashboard utilisateur.",
-        },
-        {
           title: "Possibilité de connexion avec Google",
           label: "UX",
           quarter: "Q1 2026",
