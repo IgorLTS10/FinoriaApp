@@ -19,6 +19,7 @@ import Crypto from "./pages/Dashboard/Crypto/Crypto"
 import Actions from "./pages/Dashboard/Actions/Actions"
 import Crowdfunding from "./pages/Dashboard/Crowdfunding/Crowdfunding"
 import Settings from "./pages/Dashboard/Settings/Settings";
+import CompoundInterestCalculator from "./pages/Dashboard/Tools/CompoundInterestCalculator";
 import { PreferencesProvider } from "./state/PreferencesContext";
 
 function QueryAuthController() {
@@ -74,6 +75,7 @@ function Root() {
           <Route path="actions" element={<Actions />} />
           <Route path="crowdfunding" element={<Crowdfunding />} />
           <Route path="parametres" element={<Settings />} />
+          <Route path="outils/interets-composes" element={<CompoundInterestCalculator />} />
         </Route>
       </Routes>
 

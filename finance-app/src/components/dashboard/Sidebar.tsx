@@ -92,6 +92,17 @@ export default function Sidebar() {
       </div>
 
       <div className={styles.group}>
+        <div className={styles.groupLabel}>Outils</div>
+        <NavLink
+          to="/dashboard/outils/interets-composes"
+          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+        >
+          Calculatrice d'intérêts
+          <span className={styles.statusDot} data-status="green"></span>
+        </NavLink>
+      </div>
+
+      <div className={styles.group}>
         <div className={styles.groupLabel}>Système</div>
 
         {/* ✅ Nouveau lien Roadmap */}
