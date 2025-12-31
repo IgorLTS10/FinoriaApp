@@ -21,6 +21,8 @@ import Crowdfunding from "./pages/Dashboard/Crowdfunding/Crowdfunding"
 import Settings from "./pages/Dashboard/Settings/Settings";
 import CompoundInterestCalculator from "./pages/Dashboard/Tools/CompoundInterestCalculator";
 import { PreferencesProvider } from "./state/PreferencesContext";
+import OAuthCallback from "./pages/OAuthCallback";
+import StackHandler from "./pages/StackHandler";
 
 function QueryAuthController() {
   const { open, close } = useAuthModal();
@@ -59,6 +61,8 @@ function Root() {
     <>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/oauth" element={<OAuthCallback />} />
+        <Route path="/handler/*" element={<StackHandler />} />
 
         <Route
           path="/dashboard"
