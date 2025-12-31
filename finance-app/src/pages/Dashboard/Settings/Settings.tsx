@@ -128,11 +128,23 @@ export default function Settings() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
+                // Try to get the response text first
+                const responseText = await response.text();
+                console.error("Stack Auth Raw Response:", responseText);
+
+                // Try to parse as JSON
+                let errorData: any = {};
+                try {
+                    errorData = JSON.parse(responseText);
+                } catch (e) {
+                    console.error("Failed to parse error response as JSON");
+                }
+
                 console.error("Stack Auth API Error:", {
                     status: response.status,
                     statusText: response.statusText,
-                    errorData
+                    errorData,
+                    rawResponse: responseText
                 });
                 throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
             }
