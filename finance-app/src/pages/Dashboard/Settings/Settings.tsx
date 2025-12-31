@@ -128,7 +128,12 @@ export default function Settings() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to update password');
+                console.error("Stack Auth API Error:", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData
+                });
+                throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
             }
 
             setPasswordMessage("✓ Mot de passe mis à jour avec succès");
