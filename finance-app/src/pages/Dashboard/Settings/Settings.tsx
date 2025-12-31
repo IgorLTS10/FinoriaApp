@@ -74,7 +74,6 @@ export default function Settings() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
-    const [isPasswordSaving, setIsPasswordSaving] = useState(false);
 
     const handlePasswordChange = async () => {
         setPasswordMessage("");
@@ -95,28 +94,9 @@ export default function Settings() {
             return;
         }
 
-        setIsPasswordSaving(true);
-
-        try {
-            // Update password using Stack Auth API
-            await user?.update({
-                password: newPassword,
-            });
-
-            setPasswordMessage("✓ Mot de passe mis à jour avec succès");
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-            setIsChangingPassword(false);
-
-            // Clear success message after 3 seconds
-            setTimeout(() => setPasswordMessage(""), 3000);
-        } catch (error: any) {
-            console.error("Error updating password:", error);
-            setPasswordMessage("✗ Erreur lors de la mise à jour du mot de passe");
-        } finally {
-            setIsPasswordSaving(false);
-        }
+        // Note: Stack Auth requires a different approach for password changes
+        // This would typically be done through a password reset flow
+        setPasswordMessage("✗ Veuillez utiliser la fonction 'Mot de passe oublié' pour changer votre mot de passe");
     };
 
     const handleCancelPasswordChange = () => {
@@ -323,14 +303,12 @@ export default function Settings() {
                             <div className={styles.formActions}>
                                 <button
                                     onClick={handlePasswordChange}
-                                    disabled={isPasswordSaving}
                                     className={styles.saveButton}
                                 >
-                                    {isPasswordSaving ? "Enregistrement..." : "💾 Enregistrer"}
+                                    💾 Enregistrer
                                 </button>
                                 <button
                                     onClick={handleCancelPasswordChange}
-                                    disabled={isPasswordSaving}
                                     className={styles.cancelButton}
                                 >
                                     Annuler
