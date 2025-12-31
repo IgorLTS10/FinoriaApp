@@ -1,4 +1,5 @@
 import { useUser } from "@stackframe/react";
+import { AccountSettings } from "@stackframe/stack";
 import { usePreferences } from "../../../state/PreferencesContext";
 import styles from "./Settings.module.css";
 import { useState } from "react";
@@ -66,111 +67,6 @@ export default function Settings() {
 
     const handleCropCancel = () => {
         setImageToCrop(null);
-    };
-
-    // Password change state
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [passwordMessage, setPasswordMessage] = useState("");
-    const [isPasswordSaving, setIsPasswordSaving] = useState(false);
-
-    const handlePasswordChange = async () => {
-        setPasswordMessage("");
-
-        // Check if user is using OAuth (Google/GitHub) - they don't have a password to change
-        if (user?.primaryEmail && !user?.hasPassword) {
-            setPasswordMessage("✗ Vous êtes connecté via Google/GitHub. Vous ne pouvez pas changer de mot de passe.");
-            return;
-        }
-
-        // Validation
-        if (!newPassword || !confirmPassword) {
-            setPasswordMessage("✗ Veuillez remplir tous les champs");
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            setPasswordMessage("✗ Les mots de passe ne correspondent pas");
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            setPasswordMessage("✗ Le mot de passe doit contenir au moins 8 caractères");
-            return;
-        }
-
-        setIsPasswordSaving(true);
-
-        try {
-            // Get the access token from Stack Auth
-            const authJson = await user?.getAuthJson();
-            const accessToken = authJson?.accessToken;
-
-            if (!accessToken) {
-                throw new Error('No access token available');
-            }
-
-            // Use Stack Auth's setPassword method
-            const response = await fetch('https://api.stack-auth.com/api/v1/auth/password/set', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-stack-project-id': import.meta.env.VITE_STACK_PROJECT_ID!,
-                    'x-stack-publishable-client-key': import.meta.env.VITE_STACK_PUBLISHABLE_CLIENT_KEY!,
-                    'x-stack-access-type': 'client',
-                    'x-stack-access-token': accessToken,
-                },
-                body: JSON.stringify({
-                    password: newPassword,
-                }),
-            });
-
-            if (!response.ok) {
-                // Try to get the response text first
-                const responseText = await response.text();
-                console.error("Stack Auth Raw Response:", responseText);
-
-                // Try to parse as JSON
-                let errorData: any = {};
-                try {
-                    errorData = JSON.parse(responseText);
-                } catch (e) {
-                    console.error("Failed to parse error response as JSON");
-                }
-
-                console.error("Stack Auth API Error:", {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorData,
-                    rawResponse: responseText
-                });
-                throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
-            }
-
-            setPasswordMessage("✓ Mot de passe mis à jour avec succès");
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-            setIsChangingPassword(false);
-
-            // Clear success message after 3 seconds
-            setTimeout(() => setPasswordMessage(""), 3000);
-        } catch (error: any) {
-            console.error("Error updating password:", error);
-            setPasswordMessage(`✗ ${error.message || 'Erreur lors de la mise à jour du mot de passe'}`);
-        } finally {
-            setIsPasswordSaving(false);
-        }
-    };
-
-    const handleCancelPasswordChange = () => {
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setPasswordMessage("");
-        setIsChangingPassword(false);
     };
 
     return (
@@ -316,84 +212,11 @@ export default function Settings() {
                 </section>
             )}
 
-            {/* Password Change Section - Only for email/password users */}
-            {user && user.hasPassword && (
+            {/* Account Settings - Managed by Stack Auth */}
+            {user && (
                 <section className={styles.card}>
-                    <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>Sécurité</h3>
-                        {!isChangingPassword && (
-                            <button
-                                onClick={() => setIsChangingPassword(true)}
-                                className={styles.editButton}
-                            >
-                                🔒 Changer le mot de passe
-                            </button>
-                        )}
-                    </div>
-
-                    {isChangingPassword ? (
-                        <div className={styles.editForm}>
-                            <div className={styles.formGroup}>
-                                <label className={styles.formLabel}>Mot de passe actuel</label>
-                                <input
-                                    type="password"
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                    placeholder="Entrez votre mot de passe actuel"
-                                    className={styles.input}
-                                />
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.formLabel}>Nouveau mot de passe</label>
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    placeholder="Minimum 8 caractères"
-                                    className={styles.input}
-                                />
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.formLabel}>Confirmer le nouveau mot de passe</label>
-                                <input
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Retapez le nouveau mot de passe"
-                                    className={styles.input}
-                                />
-                            </div>
-
-                            <div className={styles.formActions}>
-                                <button
-                                    onClick={handlePasswordChange}
-                                    disabled={isPasswordSaving}
-                                    className={styles.saveButton}
-                                >
-                                    {isPasswordSaving ? "Enregistrement..." : "💾 Enregistrer"}
-                                </button>
-                                <button
-                                    onClick={handleCancelPasswordChange}
-                                    disabled={isPasswordSaving}
-                                    className={styles.cancelButton}
-                                >
-                                    Annuler
-                                </button>
-                            </div>
-
-                            {passwordMessage && (
-                                <div className={passwordMessage.includes("✓") ? styles.successMessage : styles.errorMessage}>
-                                    {passwordMessage}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <p className={styles.infoText}>
-                            Cliquez sur "Changer le mot de passe" pour modifier votre mot de passe
-                        </p>
-                    )}
+                    <h3 className={styles.cardTitle}>Sécurité</h3>
+                    <AccountSettings />
                 </section>
             )}
 
