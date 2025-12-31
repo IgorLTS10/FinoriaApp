@@ -1,5 +1,4 @@
 import { useUser } from "@stackframe/react";
-import { AccountSettings } from "@stackframe/stack";
 import { usePreferences } from "../../../state/PreferencesContext";
 import styles from "./Settings.module.css";
 import { useState } from "react";
@@ -212,11 +211,19 @@ export default function Settings() {
                 </section>
             )}
 
-            {/* Account Settings - Managed by Stack Auth */}
-            {user && (
+            {/* Account Settings - Password Reset */}
+            {user && user.hasPassword && (
                 <section className={styles.card}>
                     <h3 className={styles.cardTitle}>Sécurité</h3>
-                    <AccountSettings />
+                    <div className={styles.infoBox}>
+                        <p className={styles.infoText}>
+                            <strong>Changer votre mot de passe</strong>
+                        </p>
+                        <p className={styles.infoText}>
+                            Pour changer votre mot de passe, utilisez la fonction "Mot de passe oublié" lors de la connexion.
+                            Vous recevrez un email avec un lien pour définir un nouveau mot de passe.
+                        </p>
+                    </div>
                 </section>
             )}
 
