@@ -119,6 +119,7 @@ export default function Settings() {
                     'Content-Type': 'application/json',
                     'x-stack-project-id': import.meta.env.VITE_STACK_PROJECT_ID!,
                     'x-stack-publishable-client-key': import.meta.env.VITE_STACK_PUBLISHABLE_CLIENT_KEY!,
+                    'x-stack-access-type': 'client',
                     'x-stack-access-token': accessToken,
                 },
                 body: JSON.stringify({
