@@ -112,6 +112,7 @@ export default function CompoundInterestCalculator() {
                             value={principal}
                             onChange={(e) => setPrincipal(Number(e.target.value))}
                             className={styles.slider}
+                            style={{ '--slider-percent': `${(principal / 100000) * 100}%` } as React.CSSProperties}
                         />
                         <input
                             type="number"
@@ -134,6 +135,7 @@ export default function CompoundInterestCalculator() {
                             value={monthlyContribution}
                             onChange={(e) => setMonthlyContribution(Number(e.target.value))}
                             className={styles.slider}
+                            style={{ '--slider-percent': `${(monthlyContribution / 5000) * 100}%` } as React.CSSProperties}
                         />
                         <input
                             type="number"
@@ -156,6 +158,7 @@ export default function CompoundInterestCalculator() {
                             value={annualRate}
                             onChange={(e) => setAnnualRate(Number(e.target.value))}
                             className={styles.slider}
+                            style={{ '--slider-percent': `${(annualRate / 20) * 100}%` } as React.CSSProperties}
                         />
                         <input
                             type="number"
@@ -179,6 +182,7 @@ export default function CompoundInterestCalculator() {
                             value={years}
                             onChange={(e) => setYears(Number(e.target.value))}
                             className={styles.slider}
+                            style={{ '--slider-percent': `${((years - 1) / 49) * 100}%` } as React.CSSProperties}
                         />
                         <input
                             type="number"
@@ -277,8 +281,9 @@ export default function CompoundInterestCalculator() {
                                     dataKey="total"
                                     stroke="#f59e0b"
                                     strokeWidth={3}
-                                    dot={{ fill: "#f59e0b", r: 4 }}
+                                    dot={false}
                                     name="Total"
+                                    activeDot={{ r: 6, fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }}
                                 />
                             </ComposedChart>
                         </ResponsiveContainer>
