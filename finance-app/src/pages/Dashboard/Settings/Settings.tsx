@@ -79,8 +79,14 @@ export default function Settings() {
     const handlePasswordChange = async () => {
         setPasswordMessage("");
 
+        // Check if user is using OAuth (Google/GitHub) - they don't have a password to change
+        if (user?.primaryEmail && !user?.hasPassword) {
+            setPasswordMessage("✗ Vous êtes connecté via Google/GitHub. Vous ne pouvez pas changer de mot de passe.");
+            return;
+        }
+
         // Validation
-        if (!currentPassword || !newPassword || !confirmPassword) {
+        if (!newPassword || !confirmPassword) {
             setPasswordMessage("✗ Veuillez remplir tous les champs");
             return;
         }
@@ -292,8 +298,8 @@ export default function Settings() {
                 </section>
             )}
 
-            {/* Password Change Section */}
-            {user && (
+            {/* Password Change Section - Only for email/password users */}
+            {user && user.hasPassword && (
                 <section className={styles.card}>
                     <div className={styles.cardHeader}>
                         <h3 className={styles.cardTitle}>Sécurité</h3>
