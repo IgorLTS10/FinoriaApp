@@ -22,14 +22,6 @@ const roadmapColumns: {
       key: "active",
       items: [
         {
-          title: "Suivi des cryptomonnaies",
-          label: "Diversification",
-          quarter: "2026",
-          status: "planned",
-          description:
-            "Ajout des portefeuilles crypto pour un suivi global des investissements.",
-        },
-        {
           title: "Paramètres",
           label: "UX",
           quarter: "Q1 2026",
@@ -52,28 +44,20 @@ const roadmapColumns: {
       key: "planned",
       items: [
         {
-          title: "Rapports d’investissement",
-          label: "Invest",
-          quarter: "Q1 2026",
-          status: "planned",
-          description:
-            "Vue consolidée des performances (ETF, actions, crowdfunding, métaux, crypto…).",
-        },
-        {
-          title: "Rafraichissement de la page Métaux",
-          label: "Technical Features",
-          quarter: "Q1 2026",
-          status: "active",
-          description:
-            "Après ajout ou suppression d’un métal, la page se met à jour automatiquement pour refléter les changements. Ajout des taux FX en temps réel pour conversions précises. Ajout des cours des métaux en quasi direct.",
-        },
-        {
           title: "Actions",
           label: "Diversification",
           quarter: "2026",
           status: "planned",
           description:
             "Ajout d'une liste d'actions pour suivre et analyser ses investissements en bourse.",
+        },
+        {
+          title: "Suivi des cryptomonnaies",
+          label: "Diversification",
+          quarter: "2026",
+          status: "planned",
+          description:
+            "Ajout de plusieurs comptes crypto pour suivre et analyser ses investissements en crypto.",
         },
         {
           title: "ETF",
@@ -160,7 +144,7 @@ export default function Roadmap() {
       <section className={styles.meta}>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Dernière mise à jour</div>
-          <div className={styles.metaValue}>30 Décembre 2025</div>
+          <div className={styles.metaValue}>2 Janvier 2026</div>
         </div>
         <div className={styles.metaCard}>
           <div className={styles.metaLabel}>Objectif</div>
