@@ -6,6 +6,8 @@ import { useCryptoPositions } from "./hooks/useCryptoPositions";
 import type { CryptoPositionRow, NewCryptoPayload } from "./hooks/useCryptoPositions";
 import { useCryptoPrices } from "./hooks/useCryptoPrices";
 import { usePreferences } from "../../../state/PreferencesContext";
+import { useCryptoMarketData } from "./hooks/useCryptoMarketData";
+import AllocationChart from "./components/AllocationChart";
 
 /** Vue agrégée par symbole pour les cartes */
 type AggregatedCrypto = {
@@ -14,6 +16,7 @@ type AggregatedCrypto = {
   logoUrl?: string | null;
   totalQuantity: number;
   costBasis: number;        // somme des buyTotal
+  averageBuyPrice: number;  // prix moyen d'achat
   currentPrice?: number;    // prix actuel
   currentValue?: number;
   pnlAbs?: number;
@@ -41,6 +44,7 @@ function aggregateBySymbol(
         logoUrl: row.logoUrl,
         totalQuantity: row.quantity,
         costBasis: rowCost,
+        averageBuyPrice: 0, // Will be calculated later
       });
     } else {
       existing.totalQuantity += row.quantity;
@@ -49,6 +53,9 @@ function aggregateBySymbol(
   }
 
   for (const agg of map.values()) {
+    // Calculate average buy price
+    agg.averageBuyPrice = agg.totalQuantity > 0 ? agg.costBasis / agg.totalQuantity : 0;
+
     const price = prices[agg.symbol];
     if (price) {
       const currentValue = agg.totalQuantity * price;
@@ -113,6 +120,40 @@ export default function Crypto() {
       .filter((a) => typeof a.pnlPct === "number")
       .sort((a, b) => (a.pnlPct! - b.pnlPct!))[0];
   }, [aggregated]);
+
+  // Fetch market data (24h change and price history)
+  const { data: marketData } = useCryptoMarketData(symbols);
+
+  // Table search and pagination
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Filter rows based on search query
+  const filteredRows = useMemo(() => {
+    if (!searchQuery.trim()) return rows;
+
+    const query = searchQuery.toLowerCase();
+    return rows.filter(row =>
+      row.symbol.toLowerCase().includes(query) ||
+      row.name?.toLowerCase().includes(query) ||
+      row.notes?.toLowerCase().includes(query)
+    );
+  }, [rows, searchQuery]);
+
+  // Paginate filtered rows
+  const paginatedRows = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredRows.slice(startIndex, endIndex);
+  }, [filteredRows, currentPage]);
+
+  const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+
+  // Reset to page 1 when search changes
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   return (
     <div className={styles.page}>
@@ -211,85 +252,106 @@ export default function Crypto() {
         </div>
       )}
 
-      {/* LISTE DES ASSETS SOUS FORME DE CARTES */}
-      <section className={styles.cardsSection}>
-        <h2 className={styles.sectionTitle}>Vue par crypto</h2>
-        {aggregated.length === 0 && (
-          <div className={styles.emptyState}>
-            Aucune position enregistrée pour l&apos;instant. Ajoute ta première crypto pour voir ton
-            portefeuille prendre vie ✨
-          </div>
-        )}
+      {/* OVERVIEW: CRYPTO CARDS (LEFT) + PIE CHART (RIGHT) */}
+      {aggregated.length > 0 && totalCurrentValue > 0 && (
+        <section className={styles.overviewSection}>
+          <h2 className={styles.sectionTitle}>Vue d'ensemble</h2>
 
-        <div className={styles.cardsGrid}>
-          {aggregated.map((asset) => (
-            <article key={asset.symbol} className={styles.assetCard}>
-              <div className={styles.assetHeader}>
-                <div className={styles.assetIdentity}>
-                  {asset.logoUrl ? (
-                    <img
-                      src={asset.logoUrl}
-                      alt={asset.symbol}
-                      className={styles.assetLogo}
-                    />
-                  ) : (
-                    <div className={styles.assetLogoPlaceholder}>
-                      {asset.symbol[0] ?? "?"}
+          <div className={styles.overviewGrid}>
+            {/* Left: Crypto Cards (Scrollable) */}
+            <div className={styles.cryptoCardsContainer}>
+              <h3 className={styles.cardSubtitle}>Mes Cryptos</h3>
+              <div className={styles.cryptoCardsList}>
+                {aggregated.map((asset) => {
+                  const assetMarketData = marketData[asset.symbol];
+                  const change24h = assetMarketData?.change24h;
+                  const portfolioPercent = totalCurrentValue > 0
+                    ? ((asset.currentValue || 0) / totalCurrentValue) * 100
+                    : 0;
+
+                  return (
+                    <div key={asset.symbol} className={styles.compactCryptoCard}>
+                      <div className={styles.compactCardHeader}>
+                        <div className={styles.compactCardIdentity}>
+                          {asset.logoUrl ? (
+                            <img src={asset.logoUrl} alt={asset.symbol} className={styles.compactLogo} />
+                          ) : (
+                            <div className={styles.compactLogoPlaceholder}>{asset.symbol[0] ?? "?"}</div>
+                          )}
+                          <div>
+                            <div className={styles.compactSymbol}>{asset.symbol}</div>
+                            {asset.name && <div className={styles.compactName}>{asset.name}</div>}
+                          </div>
+                        </div>
+                        {change24h !== undefined && (
+                          <div className={`${styles.compactChange} ${change24h >= 0 ? styles.positive : styles.negative}`}>
+                            {change24h >= 0 ? '↗' : '↘'} {change24h >= 0 ? '+' : ''}{change24h.toFixed(2)}%
+                          </div>
+                        )}
+                      </div>
+
+                      <div className={styles.compactCardStats}>
+                        <div className={styles.compactStat}>
+                          <span className={styles.compactStatLabel}>Quantité</span>
+                          <span className={styles.compactStatValue}>{asset.totalQuantity}</span>
+                        </div>
+                        <div className={styles.compactStat}>
+                          <span className={styles.compactStatLabel}>Prix moy.</span>
+                          <span className={styles.compactStatValue}>
+                            {asset.averageBuyPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                          </span>
+                        </div>
+                        <div className={styles.compactStat}>
+                          <span className={styles.compactStatLabel}>Valeur</span>
+                          <span className={styles.compactStatValue}>
+                            {asset.currentValue?.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '—'} €
+                          </span>
+                        </div>
+                        <div className={styles.compactStat}>
+                          <span className={styles.compactStatLabel}>Performance</span>
+                          <span className={`${styles.compactStatValue} ${asset.pnlAbs != null
+                              ? asset.pnlAbs > 0 ? styles.positive : (asset.pnlAbs < 0 ? styles.negative : "")
+                              : ""
+                            }`}>
+                            {asset.pnlAbs != null && asset.pnlPct != null
+                              ? `${asset.pnlAbs >= 0 ? "+" : ""}${asset.pnlAbs.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (${asset.pnlPct.toFixed(1)}%)`
+                              : "—"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.compactProgress}>
+                        <div className={styles.compactProgressLabel}>
+                          <span>{portfolioPercent.toFixed(1)}% du portfolio</span>
+                        </div>
+                        <div className={styles.compactProgressBar}>
+                          <div className={styles.compactProgressFill} style={{ width: `${Math.min(portfolioPercent, 100)}%` }} />
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <div className={styles.assetSymbol}>{asset.symbol}</div>
-                    {asset.name && (
-                      <div className={styles.assetName}>{asset.name}</div>
-                    )}
-                  </div>
-                </div>
+                  );
+                })}
               </div>
+            </div>
 
-              <div className={styles.assetBody}>
-                <div className={styles.assetRow}>
-                  <span>Quantité</span>
-                  <span>{asset.totalQuantity}</span>
-                </div>
-                <div className={styles.assetRow}>
-                  <span>Montant investi</span>
-                  <span>{asset.costBasis.toFixed(2)} €</span>
-                </div>
-                <div className={styles.assetRow}>
-                  <span>Valeur actuelle</span>
-                  <span>
-                    {asset.currentValue != null
-                      ? `${asset.currentValue.toFixed(2)} €`
-                      : "—"}
-                  </span>
-                </div>
-                <div className={styles.assetRow}>
-                  <span>Performance</span>
-                  <span
-                    className={
-                      asset.pnlAbs != null
-                        ? asset.pnlAbs > 0
-                          ? styles.positive
-                          : asset.pnlAbs < 0
-                            ? styles.negative
-                            : ""
-                        : styles.muted
-                    }
-                  >
-                    {asset.pnlAbs != null && asset.pnlPct != null
-                      ? `${asset.pnlAbs >= 0 ? "+" : ""}${asset.pnlAbs.toFixed(
-                        2
-                      )} € (${asset.pnlPct.toFixed(1)} %)`
-                      : "—"}
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+            {/* Right: Pie Chart (Static) */}
+            <div className={styles.allocationCard}>
+              <AllocationChart
+                data={aggregated.map(asset => ({
+                  name: asset.symbol,
+                  value: asset.currentValue || 0,
+                  percentage: totalCurrentValue > 0
+                    ? ((asset.currentValue || 0) / totalCurrentValue) * 100
+                    : 0,
+                  color: '', // Will be set by the component
+                }))}
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* TABLEAU DÉTAILLÉ DES LIGNES */}
+      {/* TRANSACTIONS TABLE */}
       <section className={styles.tableSection}>
         <h2 className={styles.sectionTitle}>Lignes d&apos;achat</h2>
 
@@ -303,112 +365,166 @@ export default function Crypto() {
         )}
 
         {rows.length > 0 && (
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Crypto</th>
-                  <th>Quantité</th>
-                  <th>Prix unitaire</th>
-                  <th>Montant total</th>
-                  <th>Valeur actuelle</th>
-                  <th>Performance</th>
-                  <th>Date d&apos;achat</th>
-                  <th>Notes</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => {
-                  // Calculer la valeur actuelle et la performance
-                  const currentPrice = pricesBySymbol[row.symbol.toUpperCase()];
-                  const currentValue = currentPrice ? row.quantity * currentPrice : undefined;
-                  const pnl = currentValue !== undefined ? currentValue - row.buyTotal : undefined;
-                  const pnlPct = pnl !== undefined && row.buyTotal > 0 ? (pnl / row.buyTotal) * 100 : undefined;
+          <>
+            {/* Search bar */}
+            <div className={styles.tableControls}>
+              <div className={styles.searchBar}>
+                <span className={styles.searchIcon}>🔍</span>
+                <input
+                  type="text"
+                  placeholder="Rechercher par crypto, nom ou notes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={styles.searchInput}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className={styles.clearButton}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className={styles.tableInfo}>
+                {filteredRows.length} résultat{filteredRows.length > 1 ? 's' : ''}
+                {searchQuery && ` sur ${rows.length}`}
+              </div>
+            </div>
 
-                  return (
-                    <tr key={row.id} className={styles.tableRow}>
-                      <td>
-                        <div className={styles.tableCryptoCell}>
-                          {row.logoUrl ? (
-                            <img
-                              src={row.logoUrl}
-                              alt={row.symbol}
-                              className={styles.tableCryptoLogo}
-                            />
-                          ) : (
-                            <div className={styles.tableCryptoLogoPlaceholder}>
-                              {row.symbol[0] ?? "?"}
-                            </div>
-                          )}
-                          <div className={styles.tableCryptoInfo}>
-                            <span className={styles.tableCryptoSymbol}>{row.symbol}</span>
-                            {row.name && (
-                              <span className={styles.tableCryptoName}>{row.name}</span>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Crypto</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Montant total</th>
+                    <th>Valeur actuelle</th>
+                    <th>Performance</th>
+                    <th>Date d&apos;achat</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedRows.map((row) => {
+                    // Calculer la valeur actuelle et la performance
+                    const currentPrice = pricesBySymbol[row.symbol.toUpperCase()];
+                    const currentValue = currentPrice ? row.quantity * currentPrice : undefined;
+                    const pnl = currentValue !== undefined ? currentValue - row.buyTotal : undefined;
+                    const pnlPct = pnl !== undefined && row.buyTotal > 0 ? (pnl / row.buyTotal) * 100 : undefined;
+
+                    return (
+                      <tr key={row.id} className={styles.tableRow}>
+                        <td>
+                          <div className={styles.tableCryptoCell}>
+                            {row.logoUrl ? (
+                              <img
+                                src={row.logoUrl}
+                                alt={row.symbol}
+                                className={styles.tableCryptoLogo}
+                              />
+                            ) : (
+                              <div className={styles.tableCryptoLogoPlaceholder}>
+                                {row.symbol[0] ?? "?"}
+                              </div>
                             )}
+                            <div className={styles.tableCryptoInfo}>
+                              <span className={styles.tableCryptoSymbol}>{row.symbol}</span>
+                              {row.name && (
+                                <span className={styles.tableCryptoName}>{row.name}</span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={styles.quantityBadge}>{row.quantity}</span>
-                      </td>
-                      <td>{row.buyPriceUnit.toFixed(2)} {row.buyCurrency}</td>
-                      <td>
-                        <span className={styles.amountValue}>{row.buyTotal.toFixed(2)} {row.buyCurrency}</span>
-                      </td>
-                      <td>
-                        {currentValue !== undefined ? (
-                          <span className={styles.currentValue}>
-                            {currentValue.toFixed(2)} {currency}
-                          </span>
-                        ) : (
-                          <span className={styles.muted}>—</span>
-                        )}
-                      </td>
-                      <td>
-                        {pnl !== undefined && pnlPct !== undefined ? (
-                          <div className={styles.performanceCell}>
-                            <span className={`${styles.performanceValue} ${pnl > 0 ? styles.positive : pnl < 0 ? styles.negative : styles.neutral}`}>
-                              {pnl >= 0 ? '↗' : '↘'} {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} {currency}
+                        </td>
+                        <td>
+                          <span className={styles.quantityBadge}>{row.quantity}</span>
+                        </td>
+                        <td>{row.buyPriceUnit.toFixed(2)} {row.buyCurrency}</td>
+                        <td>
+                          <span className={styles.amountValue}>{row.buyTotal.toFixed(2)} {row.buyCurrency}</span>
+                        </td>
+                        <td>
+                          {currentValue !== undefined ? (
+                            <span className={styles.currentValue}>
+                              {currentValue.toFixed(2)} {currency}
                             </span>
-                            <span className={`${styles.performancePct} ${pnl > 0 ? styles.positive : pnl < 0 ? styles.negative : styles.neutral}`}>
-                              ({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%)
-                            </span>
-                          </div>
-                        ) : (
-                          <span className={styles.muted}>—</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className={styles.dateValue}>{row.buyDate}</span>
-                      </td>
-                      <td className={styles.tableNotes}>
-                        {row.notes || <span className={styles.muted}>—</span>}
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className={styles.deleteButton}
-                          onClick={async () => {
-                            if (!window.confirm("Supprimer cette ligne ?")) return;
-                            try {
-                              await deletePosition(row.id);
-                            } catch (err: any) {
-                              console.error(err);
-                              alert(err.message || "Erreur lors de la suppression");
-                            }
-                          }}
-                        >
-                          🗑
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                          ) : (
+                            <span className={styles.muted}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          {pnl !== undefined && pnlPct !== undefined ? (
+                            <div className={styles.performanceCell}>
+                              <span className={`${styles.performanceValue} ${pnl > 0 ? styles.positive : pnl < 0 ? styles.negative : styles.neutral}`}>
+                                {pnl >= 0 ? '↗' : '↘'} {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} {currency}
+                              </span>
+                              <span className={`${styles.performancePct} ${pnl > 0 ? styles.positive : pnl < 0 ? styles.negative : styles.neutral}`}>
+                                ({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%)
+                              </span>
+                            </div>
+                          ) : (
+                            <span className={styles.muted}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={styles.dateValue}>{row.buyDate}</span>
+                        </td>
+                        <td className={styles.tableNotes}>
+                          {row.notes || <span className={styles.muted}>—</span>}
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className={styles.deleteButton}
+                            onClick={async () => {
+                              if (!window.confirm("Supprimer cette ligne ?")) return;
+                              try {
+                                await deletePosition(row.id);
+                              } catch (err: any) {
+                                console.error(err);
+                                alert(err.message || "Erreur lors de la suppression");
+                              }
+                            }}
+                          >
+                            🗑
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className={styles.paginationButton}
+                >
+                  ← Précédent
+                </button>
+
+                <div className={styles.paginationInfo}>
+                  Page {currentPage} sur {totalPages}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className={styles.paginationButton}
+                >
+                  Suivant →
+                </button>
+              </div>
+            )}
+          </>
+        )
+        }
       </section>
 
       {addModalOpen && (

@@ -1,0 +1,97 @@
+.container {
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 380px;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.tooltip {
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+}
+
+.tooltipHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tooltipColor {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.tooltipName {
+    font-weight: 700;
+    color: #fff;
+    font-size: 0.875rem;
+}
+
+.tooltipValue {
+    color: #60a5fa;
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
+}
+
+.tooltipPercentage {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+/* Custom Legend */
+.customLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    padding: 0 1rem;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.legendItem:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.legendColor {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.legendText {
+    font-size: 0.8rem;
+    color: #d1d5db;
+    font-weight: 500;
+}
+
+.legendPercent {
+    color: #9ca3af;
+    font-weight: 400;
+}

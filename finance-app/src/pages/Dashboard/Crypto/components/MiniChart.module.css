@@ -1,0 +1,13 @@
+.container {
+    width: 100%;
+    position: relative;
+}
+
+.noData {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
