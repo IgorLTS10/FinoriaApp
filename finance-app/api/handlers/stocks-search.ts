@@ -49,7 +49,7 @@ export async function handleStockSearch(req: VercelRequest, res: VercelResponse)
             // Pour les actions américaines, on peut essayer de deviner le domaine
             // Exemple: AAPL -> apple.com, MSFT -> microsoft.com
             const cleanSymbol = symbol.replace(/[^A-Z]/g, "").toLowerCase();
-            if (cleanSymbol && exchange.includes("NAS") || exchange.includes("NYS") || exchange.includes("NYSE")) {
+            if (cleanSymbol && (exchange.includes("NAS") || exchange.includes("NYS") || exchange.includes("NYSE"))) {
                 // Essayer avec Clearbit logo API
                 logoUrl = `https://logo.clearbit.com/${cleanSymbol}.com`;
             }
