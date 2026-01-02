@@ -88,7 +88,7 @@ export default function AllocationChart({ data }: AllocationChartProps) {
                         animationBegin={0}
                         paddingAngle={2}
                     >
-                        {chartData.map((entry, index) => (
+                        {chartData.map((_, index) => (
                             <Cell
                                 key={`cell-${index}`}
                                 fill={`url(#gradient-${index})`}
