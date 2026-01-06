@@ -1,8 +1,5 @@
 // api/handlers/stocks-search.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import YahooFinanceModule from "yahoo-finance2";
-
-const yahooFinance = new YahooFinanceModule();
 
 export type StockSearchResult = {
     symbol: string;
@@ -10,6 +7,10 @@ export type StockSearchResult = {
     exchange: string;
     logoUrl: string | null;
 };
+
+// Cache pour éviter les requêtes répétées (expire après 1 heure)
+const searchCache = new Map<string, { results: StockSearchResult[], timestamp: number }>();
+const CACHE_DURATION = 60 * 60 * 1000; // 1 heure
 
 // Handler for /api/stocks/search
 export async function handleStockSearch(req: VercelRequest, res: VercelResponse) {
@@ -21,50 +22,86 @@ export async function handleStockSearch(req: VercelRequest, res: VercelResponse)
         const q = (req.query.q as string | undefined) || "";
         const query = q.trim();
 
-        if (!query) {
+        if (!query || query.length < 2) {
             return res.status(200).json({ results: [] });
         }
 
-        // Utiliser Yahoo Finance pour rechercher des actions
-        const searchResults = await yahooFinance.search(query) as any;
+        // Vérifier le cache
+        const cached = searchCache.get(query.toLowerCase());
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            console.log(`[Finnhub] Cache hit for: ${query}`);
+            return res.status(200).json({ results: cached.results });
+        }
 
-        if (!searchResults || !searchResults.quotes || searchResults.quotes.length === 0) {
+        const apiKey = process.env.FINNHUB_API_KEY;
+        if (!apiKey) {
+            console.error("[Finnhub] API key not configured");
+            return res.status(500).json({ error: "API key not configured" });
+        }
+
+        // Recherche de symboles avec Finnhub
+        console.log(`[Finnhub] Searching for: ${query}`);
+        const searchUrl = `https://finnhub.io/api/v1/search?q=${encodeURIComponent(query)}&token=${apiKey}`;
+        const searchResponse = await fetch(searchUrl);
+
+        if (!searchResponse.ok) {
+            console.error(`[Finnhub] Search failed: ${searchResponse.status}`);
+            return res.status(searchResponse.status).json({
+                error: `Finnhub API error: ${searchResponse.statusText}`
+            });
+        }
+
+        const searchData = await searchResponse.json();
+
+        if (!searchData.result || searchData.result.length === 0) {
+            console.log(`[Finnhub] No results for: ${query}`);
             return res.status(200).json({ results: [] });
         }
 
-        // Filtrer pour ne garder que les actions (pas les ETFs, indices, etc.)
-        const stocks = searchResults.quotes
-            .filter((quote: any) => quote.quoteType === "EQUITY" || quote.quoteType === "ETF")
+        // Limiter à 10 résultats et filtrer les actions US
+        const topResults = searchData.result
+            .filter((item: any) => item.type === "Common Stock" || item.type === "ETP")
             .slice(0, 10);
 
-        const results: StockSearchResult[] = stocks.map((quote: any) => {
-            const symbol = quote.symbol || "";
-            const name = quote.longname || quote.shortname || "";
-            const exchange = quote.exchange || quote.exchDisp || "";
+        // Récupérer les profils avec logos pour chaque symbole
+        const results: StockSearchResult[] = await Promise.all(
+            topResults.map(async (item: any) => {
+                const symbol = item.symbol || item.displaySymbol;
+                const name = item.description || "";
 
-            // Générer l'URL du logo via Clearbit (comme pour les cryptos)
-            // On extrait le domaine de l'entreprise à partir du nom ou du symbole
-            let logoUrl: string | null = null;
+                // Récupérer le profil pour obtenir le logo
+                let logoUrl: string | null = null;
+                try {
+                    const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${apiKey}`;
+                    const profileResponse = await fetch(profileUrl);
 
-            // Pour les actions américaines, on peut essayer de deviner le domaine
-            // Exemple: AAPL -> apple.com, MSFT -> microsoft.com
-            const cleanSymbol = symbol.replace(/[^A-Z]/g, "").toLowerCase();
-            if (cleanSymbol && (exchange.includes("NAS") || exchange.includes("NYS") || exchange.includes("NYSE"))) {
-                // Essayer avec Clearbit logo API
-                logoUrl = `https://logo.clearbit.com/${cleanSymbol}.com`;
-            }
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        logoUrl = profileData.logo || null;
+                    }
+                } catch (err) {
+                    console.warn(`[Finnhub] Failed to fetch logo for ${symbol}:`, err);
+                }
 
-            return {
-                symbol,
-                name,
-                exchange,
-                logoUrl,
-            };
+                return {
+                    symbol,
+                    name,
+                    exchange: item.type || "",
+                    logoUrl,
+                };
+            })
+        );
+
+        // Mettre en cache
+        searchCache.set(query.toLowerCase(), {
+            results,
+            timestamp: Date.now(),
         });
 
+        console.log(`[Finnhub] Found ${results.length} results for: ${query}`);
         return res.status(200).json({ results });
     } catch (err: any) {
-        console.error("Error in stocks/search:", err);
+        console.error("[Finnhub] Error in stocks/search:", err);
         return res.status(500).json({ error: err?.message || "Erreur serveur" });
     }
 }
