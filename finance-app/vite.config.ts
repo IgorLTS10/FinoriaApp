@@ -5,14 +5,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Proxy désactivé pour tester Finnhub en local
-    // Décommenter pour utiliser la prod
-    // proxy: {
-    //   '/api': {
-    //     target: 'https://finoria-app.vercel.app',
-    //     changeOrigin: true,
-    //     secure: true,
-    //   }
-    // }
+    proxy: {
+      '/api': {
+        target: 'https://finoria-app.vercel.app',
+        changeOrigin: true,
+        secure: true,
+      }
+    }
   }
 })

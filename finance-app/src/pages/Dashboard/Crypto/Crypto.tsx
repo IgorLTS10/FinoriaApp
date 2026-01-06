@@ -310,8 +310,8 @@ export default function Crypto() {
                         <div className={styles.compactStat}>
                           <span className={styles.compactStatLabel}>Performance</span>
                           <span className={`${styles.compactStatValue} ${asset.pnlAbs != null
-                              ? asset.pnlAbs > 0 ? styles.positive : (asset.pnlAbs < 0 ? styles.negative : "")
-                              : ""
+                            ? asset.pnlAbs > 0 ? styles.positive : (asset.pnlAbs < 0 ? styles.negative : "")
+                            : ""
                             }`}>
                             {asset.pnlAbs != null && asset.pnlPct != null
                               ? `${asset.pnlAbs >= 0 ? "+" : ""}${asset.pnlAbs.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € (${asset.pnlPct.toFixed(1)}%)`
@@ -336,6 +336,7 @@ export default function Crypto() {
 
             {/* Right: Pie Chart (Static) */}
             <div className={styles.allocationCard}>
+              <h3 className={styles.cardSubtitle}>Répartition</h3>
               <AllocationChart
                 data={aggregated.map(asset => ({
                   name: asset.symbol,
@@ -343,7 +344,8 @@ export default function Crypto() {
                   percentage: totalCurrentValue > 0
                     ? ((asset.currentValue || 0) / totalCurrentValue) * 100
                     : 0,
-                  color: '', // Will be set by the component
+                  color: '',
+                  logoUrl: asset.logoUrl || null,
                 }))}
               />
             </div>
