@@ -50,6 +50,7 @@ export default function InvestmentSettingsModal({
     };
 
     const handleSave = async () => {
+        console.log('[Modal] handleSave called with preferences:', localPreferences);
         const hasSelected = Object.values(localPreferences).some((v) => v);
         if (!hasSelected) {
             alert('Vous devez sélectionner au moins une catégorie');
@@ -58,7 +59,9 @@ export default function InvestmentSettingsModal({
 
         setSaving(true);
         try {
+            console.log('[Modal] Calling onSave...');
             await onSave(localPreferences);
+            console.log('[Modal] onSave completed successfully');
             onClose();
         } catch (err) {
             console.error('Error saving preferences:', err);
