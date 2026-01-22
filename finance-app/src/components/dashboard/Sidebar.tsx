@@ -1,6 +1,7 @@
 // src/components/dashboard/Sidebar.tsx
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useUser } from "@stackframe/react";
 import styles from "./Sidebar.module.css";
 import { stackClientApp } from "../../auth/stack";
 import { useInvestmentPreferences } from "../../hooks/useInvestmentPreferences";
@@ -8,7 +9,8 @@ import InvestmentSettingsModal from "./InvestmentSettingsModal";
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { preferences, savePreferences, enabledCategories, loading } = useInvestmentPreferences();
+  const user = useUser();
+  const { preferences, savePreferences, enabledCategories, loading } = useInvestmentPreferences(user?.id || null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   async function handleSignOut() {

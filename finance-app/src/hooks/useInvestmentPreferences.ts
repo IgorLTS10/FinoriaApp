@@ -1,37 +1,12 @@
 import { useState, useEffect } from 'react';
 import { INVESTMENT_CATEGORIES, DEFAULT_PREFERENCES } from '../config/investmentCategories';
 
-function getUserId(): string | null {
-    console.log('[getUserId] Starting...');
-    try {
-        const stackSession = localStorage.getItem('stack-session');
-        console.log('[getUserId] stack-session:', stackSession ? 'EXISTS' : 'NULL');
-
-        if (stackSession) {
-            const session = JSON.parse(stackSession);
-            console.log('[getUserId] session keys:', Object.keys(session));
-            console.log('[getUserId] full session:', session);
-
-            // Essayer différentes propriétés possibles
-            const userId = session?.userId || session?.user?.id || session?.id || null;
-            console.log('[getUserId] userId found:', userId);
-            return userId;
-        }
-    } catch (err) {
-        console.error('[getUserId] Error:', err);
-    }
-    console.log('[getUserId] Returning null - no session found');
-    return null;
-}
-
-export function useInvestmentPreferences() {
+export function useInvestmentPreferences(userId: string | null) {
     const [preferences, setPreferences] = useState<Record<string, boolean>>(DEFAULT_PREFERENCES);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const userId = getUserId();
-
         if (!userId) {
             console.log('[useInvestmentPreferences] No userId, using defaults');
             setLoading(false);
@@ -42,7 +17,7 @@ export function useInvestmentPreferences() {
             try {
                 const res = await fetch('/api/user/preferences', {
                     headers: {
-                        'x-user-id': userId!,
+                        'x-user-id': userId,
                     },
                 });
 
@@ -62,11 +37,10 @@ export function useInvestmentPreferences() {
         }
 
         loadPreferences();
-    }, []);
+    }, [userId]);
 
     const savePreferences = async (newPreferences: Record<string, boolean>) => {
         console.log('[savePreferences] Called with:', newPreferences);
-        const userId = getUserId();
         console.log('[savePreferences] userId:', userId);
 
         if (!userId) {
