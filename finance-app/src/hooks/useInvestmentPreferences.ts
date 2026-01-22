@@ -17,7 +17,7 @@ export function useInvestmentPreferences(userId: string | null) {
             try {
                 const res = await fetch('/api/user/preferences', {
                     headers: {
-                        'x-user-id': userId,
+                        'x-user-id': userId as string,
                     },
                 });
 
