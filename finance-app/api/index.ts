@@ -9,7 +9,7 @@ import crowdfundingPlatformsHandler from "./handlers/crowdfunding-platforms.js";
 import crowdfundingPlatformsFavoriteHandler from "./handlers/crowdfunding-platforms-favorite.js";
 import { handleFx } from "./handlers/fx.js";
 import { handleIdeas } from "./handlers/ideas.js";
-import { handleUserPreferences } from "./handlers/user-preferences.js";
+import { neon } from "@neondatabase/serverless";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Extract the path from the URL
@@ -83,7 +83,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // User preferences route
         if (path === "/api/user/preferences") {
-            return await handleUserPreferences(req, res);
+            const userId = req.headers['x-user-id'] as string;
+
+            if (!userId) {
+                return res.status(401).json({ error: "Unauthorized" });
+            }
+
+            const sql = neon(process.env.DATABASE_URL!);
+
+            if (req.method === "GET") {
+                const result = await sql`
+                    SELECT preferences 
+                    FROM user_preferences 
+                    WHERE user_id = ${userId}
+                `;
+
+                if (result.length === 0) {
+                    return res.status(200).json({
+                        preferences: {
+                            actions: true,
+                            crypto: true,
+                            etf: true,
+                            crowdfunding: true,
+                            metaux: true,
+                            immobilier: true,
+                        }
+                    });
+                }
+
+                return res.status(200).json({ preferences: result[0].preferences });
+            }
+
+            if (req.method === "POST") {
+                const { preferences } = req.body;
+
+                if (!preferences || typeof preferences !== 'object') {
+                    return res.status(400).json({ error: "Invalid preferences" });
+                }
+
+                await sql`
+                    INSERT INTO user_preferences (user_id, preferences, updated_at)
+                    VALUES (${userId}, ${JSON.stringify(preferences)}, NOW())
+                    ON CONFLICT (user_id) 
+                    DO UPDATE SET 
+                        preferences = ${JSON.stringify(preferences)},
+                        updated_at = NOW()
+                `;
+
+                return res.status(200).json({ success: true });
+            }
+
+            return res.status(405).json({ error: `Method ${req.method} not allowed` });
         }
 
         // Route not found
