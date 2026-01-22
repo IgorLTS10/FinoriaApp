@@ -44,6 +44,42 @@
   margin: 0 6px 4px;
 }
 
+/* Header Investissements avec bouton settings */
+.investmentsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 6px 4px;
+}
+
+.settingsButton {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+  line-height: 1;
+}
+
+.settingsButton:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.loading {
+  text-align: center;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.categoryIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* ---- ITEM DE NAV ---- */
 .item {
   position: relative;

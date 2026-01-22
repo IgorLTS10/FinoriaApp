@@ -9,6 +9,7 @@ import crowdfundingPlatformsHandler from "./handlers/crowdfunding-platforms.js";
 import crowdfundingPlatformsFavoriteHandler from "./handlers/crowdfunding-platforms-favorite.js";
 import { handleFx } from "./handlers/fx.js";
 import { handleIdeas } from "./handlers/ideas.js";
+import { handleUserPreferences } from "./handlers/user-preferences.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Extract the path from the URL
@@ -78,6 +79,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Ideas route
         if (path === "/api/ideas") {
             return await handleIdeas(req, res);
+        }
+
+        // User preferences route
+        if (path === "/api/user/preferences") {
+            return await handleUserPreferences(req, res);
         }
 
         // Route not found

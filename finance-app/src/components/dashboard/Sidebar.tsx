@@ -1,10 +1,15 @@
 // src/components/dashboard/Sidebar.tsx
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./Sidebar.module.css";
-import { stackClientApp } from "../../auth/stack"; // garde si tu as ce fichier
+import { stackClientApp } from "../../auth/stack";
+import { useInvestmentPreferences } from "../../hooks/useInvestmentPreferences";
+import InvestmentSettingsModal from "./InvestmentSettingsModal";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { preferences, savePreferences, enabledCategories, loading } = useInvestmentPreferences();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   async function handleSignOut() {
     try {
@@ -46,49 +51,32 @@ export default function Sidebar() {
       </div>
 
       <div className={styles.group}>
-        <div className={styles.groupLabel}>Investissements</div>
-        <NavLink
-          to="/dashboard/metaux"
-          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
-        >
-          Métaux
-          <span className={styles.statusDot} data-status="green"></span>
-        </NavLink>
-        <NavLink
-          to="/dashboard/crowdfunding"
-          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
-        >
-          Crowdfunding
-          <span className={styles.statusDot} data-status="green"></span>
-        </NavLink>
-        <NavLink
-          to="/dashboard/actions"
-          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
-        >
-          Actions
-          <span className={styles.statusDot} data-status="orange"></span>
-        </NavLink>
-        <NavLink
-          to="/dashboard/etf"
-          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
-        >
-          ETF
-          <span className={styles.statusDot} data-status="red"></span>
-        </NavLink>
-        <NavLink
-          to="/dashboard/crypto"
-          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
-        >
-          Crypto
-          <span className={styles.statusDot} data-status="green"></span>
-        </NavLink>
-        <NavLink
-          to="/dashboard/immobilier"
-          className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
-        >
-          Immobilier (SCPI)
-          <span className={styles.statusDot} data-status="red"></span>
-        </NavLink>
+        <div className={styles.investmentsHeader}>
+          <span className={styles.groupLabel}>Investissements</span>
+          <button
+            className={styles.settingsButton}
+            onClick={() => setIsSettingsOpen(true)}
+            title="Configurer les catégories"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        {loading ? (
+          <div className={styles.loading}>Chargement...</div>
+        ) : (
+          enabledCategories.map((category) => (
+            <NavLink
+              key={category.id}
+              to={category.path}
+              className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}
+            >
+              <span className={styles.categoryIcon}>{category.icon}</span>
+              {category.name}
+              <span className={styles.statusDot} data-status={category.status}></span>
+            </NavLink>
+          ))
+        )}
       </div>
 
       <div className={styles.group}>
@@ -127,6 +115,13 @@ export default function Sidebar() {
           Déconnexion
         </button>
       </div>
+
+      <InvestmentSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        preferences={preferences}
+        onSave={savePreferences}
+      />
     </aside>
   );
 }
